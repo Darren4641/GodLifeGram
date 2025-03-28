@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="57x57" th:href="@{/favicon/apple-icon-57x57.png}">
+    <link rel="apple-touch-icon" sizes="60x60" th:href="@{/favicon/apple-icon-60x60.png}">
+    <link rel="apple-touch-icon" sizes="72x72" th:href="@{/favicon/apple-icon-72x72.png}">
+    <link rel="apple-touch-icon" sizes="76x76" th:href="@{/favicon/apple-icon-76x76.png}">
+    <link rel="apple-touch-icon" sizes="114x114" th:href="@{/favicon/apple-icon-114x114.png}">
+    <link rel="apple-touch-icon" sizes="120x120" th:href="@{/favicon/apple-icon-120x120.png}">
+    <link rel="apple-touch-icon" sizes="144x144" th:href="@{/favicon/apple-icon-144x144.png}">
+    <link rel="apple-touch-icon" sizes="152x152" th:href="@{/favicon/apple-icon-152x152.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/apple-icon-180x180.png}">
+    <link rel="icon" type="image/png" sizes="192x192"  th:href="@{/favicon/android-icon-192x192.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
+    <link rel="stylesheet" href="/css/common.css" th:href="@{/css/common.css}">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <title>#갓생그램</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background: #fafafa;
+            margin: 0;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .nav button {
+            margin-left: 0.5rem;
+            background: none;
+            border: none;
+            font-weight: normal;
+            color: #888;
+            cursor: pointer;
+        }
+        .nav-left img {
+            max-width: 100px;
+        }
+        .header {
+            text-align: center;
+            padding: 1.5rem 1rem;
+        }
+        .upload-button {
+            background: #0a0a0ac2;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .post-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 700px;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 220px; /* 💡 높이 줄이기 (기존보다 낮게) */
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+
+        .post-caption {
+            padding: 0.6rem 1rem 1rem 0.8rem;
+            font-size: 0.9rem; /* 살짝 줄임 */
+            color: #333;
+        }
+
+        .post-meta {
+            padding: 0.6rem 1rem 0rem 0.7rem;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.hidden { display: none; }
+        .modal-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-content input {
+            display: block;
+            width: 100%;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+        }
+        #authModal .modal-content {
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        #authModal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        #authModal input {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin: 0.5rem 0;
+        }
+
+        .loginBtn {
+            background: #3897f0;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .image-wrapper {
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 64px;
+            height: auto;
+            z-index: 2;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- 네비게이션, 헤더, 포스트 목록 등 전체 내용 -->
+    <!-- ✅ 네비게이션 바 -->
+    <nav class="nav">
+        <div class="nav-left"><img src="/image/logo.png" alt="logo"></div>
+        <div class="nav-right">
+            <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
+            <button th:if="${user != null}" onclick="logout()">
+                로그아웃
+            </button>
+
+            <!-- 비로그인 상태: 로그인 버튼 -->
+            <button th:unless="${user != null}" onclick="showLogin()">
+                로그인
+            </button>
+        </div>
+    </nav>
+
+    <!-- ✅ 상단 메시지 + 버튼 -->
+    <div class="header">
+        <h2 th:if="${user != null}">📸 <span th:text="${user.nickname}">닉네임</span>님, 갓생을 인증해보세요!</h2>
+        <h2 th:unless="${user != null}">📸 갓생을 인증해보세요!</h2>
+        <button class="upload-button" onclick="checkLoginBeforeUpload()">갓생 등록하기</button>
+    </div>
+
+    <!-- ✅ 피드 목록 -->
+    <div class="post-list">
+        <div class="post-card" onclick="openModal('dummy1')">
+            <div class="image-wrapper">
+                <img src="https://api.dopaminedefense.team/file/image/b01cae63-fe8a-4815-979e-f5a0a1dc537b_image_picker_2C6C09D2-2428-4910-B63D-2AE49B765CDA-1557-00000085F41B5965.jpg.jpg" class="post-image" alt="갓생 이미지">
+                <img src="/icon/success.png" alt="갓생성공" class="badge">
+            </div>
+            <div class="post-meta">
+                <img src="/icon/visibility.png" alt="조회수" class="icon"> 123 &nbsp;
+                <img src="/icon/heart.png" alt="좋아요" class="icon" onclick="toggleLike(event, this)"> 42
+            </div>
+            <div class="post-caption">✏️ 오늘 새벽 기상 성공!</div>
+        </div>
+        <div class="post-card" onclick="openModal('dummy1')">
+            <div class="image-wrapper">
+                <img src="https://api.dopaminedefense.team/file/image/b01cae63-fe8a-4815-979e-f5a0a1dc537b_image_picker_2C6C09D2-2428-4910-B63D-2AE49B765CDA-1557-00000085F41B5965.jpg.jpg" class="post-image" alt="갓생 이미지">
+                <img src="/icon/success.png" alt="갓생성공" class="badge">
+            </div>
+            <div class="post-meta">
+                <img src="/icon/visibility.png" alt="조회수" class="icon"> 123 &nbsp;
+                <img src="/icon/empty_heart.png" alt="좋아요" class="icon" onclick="toggleLike(event, this)"> 42
+            </div>
+            <div class="post-caption">✏️ 오늘 새벽 기상 성공!</div>
+        </div>
+
+        <!-- 더미 반복... -->
+    </div>
+
+    <!-- ✅ 갓생 상세 모달 -->
+    <div id="postModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img src="https://api.dopaminedefense.team/file/image/b01cae63-fe8a-4815-979e-f5a0a1dc537b_image_picker_2C6C09D2-2428-4910-B63D-2AE49B765CDA-1557-00000085F41B5965.jpg.jpg" class="post-image" alt="갓생 이미지">
+            <p class="modal-text">상세 내용이 여기에 표시됩니다. 루틴 인증 텍스트 등등.</p>
+        </div>
+    </div>
+
+    <!-- ✅ 로그인/회원가입 모달 -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content" style="position: relative;">
+            <button class="close" onclick="closeAuthModal()" style="
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        ">&times;</button>
+
+            <h3>로그인</h3>
+            <input type="text" placeholder="아이디" id="inputId">
+            <input type="password" placeholder="비밀번호" id="inputPw">
+            <div class="error" id="loginError"></div>
+            <button class="loginBtn" onclick="login()">로그인하기</button>
+
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
+                계정이 없으신가요? <a href="/signup" style="color: #3897f0; text-decoration: none;">회원가입</a>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<!-- 💖 중앙 하트 애니메이션용 -->
+<div id="heart-effect" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: all 0.7s ease;
+">
+    <img src="/icon/heart.png" alt="하트 효과" style="width: 100px; height: auto;">
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var user = /*[[ ${user} ]]*/;
+    function openModal(id) {
+        document.getElementById('postModal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('postModal').classList.add('hidden');
+    }
+
+    function checkLoginBeforeUpload() {
+        if (user) {
+            location.href = '/posts/new';
+        } else {
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+    }
+
+    function closeAuthModal() {
+        document.getElementById('authModal').classList.add('hidden');
+    }
+
+    function login() {
+        const email = document.getElementById('inputId').value;
+        const password = document.getElementById('inputPw').value;
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = "";
+
+        fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        })
+            .then(response => {
+                return response.json().then(body => ({ status: response.status, body })); // 응답을 객체로 변환
+            })
+            .then(({ status, body }) => {
+                if (status >= 400) {
+                    errorDiv.textContent = body.errors?.length > 0 ? body.errors[0].message : body.message || "서버 오류 발생";
+                    return;
+                }
+
+                closeAuthModal();
+                location.reload();
+            })
+            .catch(err => {
+                errorDiv.textContent = err.message || "로그인 중 오류 발생";
+            });
+    }
+
+    function logout() {
+        fetch("/auth/logout", { method: "POST" })
+            .then(() => {
+                sessionStorage.removeItem('loggedIn');
+                alert("로그아웃 되었습니다.");
+                location.reload(); // 새로고침으로 메인 반영
+            })
+            .catch(() => alert("로그아웃 실패"));
+    }
+
+    function showLogin() {
+        document.getElementById('authModal').classList.remove('hidden');
+    }
+    function goMyPage() {
+        const isLoggedIn = sessionStorage.getItem('loggedIn');
+        if (isLoggedIn) {
+            location.href = '/myposts';
+        } else {
+            alert('로그인 후 이용해 주세요!');
+        }
+    }
+
+    function toggleLike(event, icon) {
+        event.stopPropagation();
+        // 하트 이미지 교체
+        const isLiked = icon.getAttribute("src").includes("empty_heart");
+        icon.setAttribute("src", isLiked ? "/icon/heart.png" : "/icon/empty_heart.png");
+
+        // 숫자 업데이트 (임시, 실제 서버 반영은 별도)
+        const countNode = icon.nextSibling;
+        if (countNode && countNode.nodeType === 3) {
+            let count = parseInt(countNode.textContent.trim());
+            countNode.textContent = isLiked ? ` ${count + 1}` : ` ${count - 1}`;
+        }
+
+        // ❤️ 하트 애니메이션 (좋아요일 때만)
+        if (isLiked) {
+            const effect = document.getElementById("heart-effect");
+            effect.style.opacity = "1";
+            effect.style.transform = "translate(-50%, -50%) scale(1.4)";
+            setTimeout(() => {
+                effect.style.opacity = "0";
+                effect.style.transform = "translate(-50%, -50%) scale(1)";
+            }, 700);
+        }
+    }
+</script>
+</html>

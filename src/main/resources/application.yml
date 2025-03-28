@@ -1,0 +1,15 @@
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:7306/godseng_db}
+    username: ${DB_USERNAME:godseng_user}
+    password: ${DB_PASSWORD:godseng_pass123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: update
+    show-sql: true
+    generate-ddl: true

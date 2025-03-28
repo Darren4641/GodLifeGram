@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql8-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123    # 루트 비밀번호
+      MYSQL_DATABASE: godseng_db          # 생성할 DB 이름
+      MYSQL_USER: godseng_user            # 생성할 사용자
+      MYSQL_PASSWORD: godseng_pass123     # 사용자 비번
+    ports:
+      - "7306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command:
+      --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_data:
