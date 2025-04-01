@@ -11,6 +11,6 @@ COPY build/libs/*.jar app.jar
 # JAR 파일을 실행합니다.
 ENTRYPOINT ["java", "-Xms512m", "-Xmx768m", "-XX:+UseG1GC", "-jar", "app.jar"]
 
-## docker build --platform linux/amd64 -t godligefram:0.0.1 .
-## docker run -d -p 8082:8080 godligefram:0.0.1
+## docker build --platform linux/amd64 -t godligefram:0.0.7 .
+## docker run -d -p 8084:8080 godligefram:0.0.7
 
