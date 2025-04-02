@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ExceptionMsg> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         return new ResponseEntity<>(
-                new ExceptionMsg(ResultCode.SUBSCRIBE_UNIQUE.getMessage(), ResultCode.SUBSCRIBE_UNIQUE.getCode(), false, List.of()),
+                new ExceptionMsg(ResultCode.ALREADY_DATA.getCode(), ResultCode.ALREADY_DATA.getCode(), false, List.of()),
                 HttpStatus.BAD_REQUEST
         );
     }
