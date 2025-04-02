@@ -462,5 +462,11 @@
             closeUploadModal();
         }
     });
+
+    document.getElementById('authModal').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            login();
+        }
+    });
 </script>
 </html>
