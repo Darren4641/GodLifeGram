@@ -107,6 +107,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
         .modal.hidden { display: none; }
         .modal-content {
@@ -272,10 +273,35 @@
 ">
     <img src="/icon/heart.png" alt="하트 효과" style="width: 100px; height: auto;">
 </div>
+<!-- 갓생 업로드 모달 -->
+<div id="uploadModal" class="upload-modal hidden">
+    <div class="upload-handle"></div>
+    <div class="upload-header">
+        <span>갓생 등록</span>
+        <button class="close-btn" onclick="closeUploadModal()">✕</button>
+    </div>
+
+    <form id="uploadForm" class="upload-form">
+        <textarea placeholder="오늘의 갓생을 인증해보세요!" rows="4"></textarea>
+
+        <div class="upload-images">
+            <label class="image-box">
+                <input type="file" accept="image/*" multiple onchange="handleImageUpload(event)">
+                <span>＋</span>
+            </label>
+            <div id="imagePreviewContainer">
+            </div>
+        </div>
+
+        <button type="submit" class="upload-submit">업로드</button>
+    </form>
+</div>
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
+    let imageList = [];
+
     function openModal(id) {
         document.getElementById('postModal').classList.remove('hidden');
     }
@@ -285,7 +311,7 @@
 
     function checkLoginBeforeUpload() {
         if (user) {
-            location.href = '/posts/new';
+            openUploadModal();
         } else {
             document.getElementById('authModal').classList.remove('hidden');
         }
@@ -373,5 +399,67 @@
             }, 700);
         }
     }
+
+    function openUploadModal() {
+        const modal = document.getElementById("uploadModal");
+        modal.classList.add("show");
+        modal.classList.remove("hidden");
+    }
+
+    function closeUploadModal() {
+        const modal = document.getElementById("uploadModal");
+        modal.classList.remove("show");
+        setTimeout(() => modal.classList.add("hidden"), 300);
+    }
+
+    function handleImageUpload(event) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById("imagePreviewContainer");
+
+        if (imageList.length + files.length > 5) {
+            alert("이미지는 최대 5개까지 업로드 가능합니다.");
+            return;
+        }
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "preview-image-wrapper";
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+
+                const btn = document.createElement("button");
+                btn.className = "remove-image";
+                btn.innerText = "×";
+                btn.onclick = () => {
+                    wrapper.remove();
+                    imageList = imageList.filter(i => i !== file); // 리스트에서도 제거
+                };
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(btn);
+                previewContainer.appendChild(wrapper);
+                imageList.push(file);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
+    }
+
+    // 💡 아래에서 위로 스와이프 감지
+    let startY = 0;
+    const modal = document.getElementById("uploadModal");
+    modal.addEventListener("touchstart", e => {
+        startY = e.touches[0].clientY;
+    });
+    modal.addEventListener("touchmove", e => {
+        const currentY = e.touches[0].clientY;
+        if (currentY - startY > 80) { // 아래로 스와이프
+            closeUploadModal();
+        }
+    });
 </script>
 </html>
