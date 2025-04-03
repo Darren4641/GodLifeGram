@@ -68,6 +68,7 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem;
+            touch-action: pan-y;
         }
         .post-card {
             background: white;
@@ -83,7 +84,7 @@
 
         .post-image {
             width: 100%;
-            height: 220px; /* 💡 높이 줄이기 (기존보다 낮게) */
+            height: 180px; /* 💡 높이 줄이기 (기존보다 낮게) */
             object-fit: cover;
             border-bottom: 1px solid #eee;
         }
@@ -197,11 +198,22 @@
         <button class="upload-button" onclick="checkLoginBeforeUpload()">갓생 등록하기</button>
     </div>
 
+    <!-- ✅ 정렬 필터링 -->
+    <!-- ✅ 정렬 필터링 -->
+    <div class="sort-filter">
+        <label for="sortSelect">정렬 기준:</label>
+        <select id="sortSelect" onchange="onSortChange()">
+            <option value="created,DESC">최신순</option>
+            <option value="like,DESC">좋아요순</option>
+            <option value="view,DESC">조회수순</option>
+        </select>
+    </div>
+
     <!-- ✅ 피드 목록 -->
     <div class="post-list">
-        <div class="post-card" onclick="openModal('dummy1')">
+        <!--<div class="post-card" onclick="openModal('dummy1')">
             <div class="image-wrapper">
-                <img src="https://api.dopaminedefense.team/file/image/b01cae63-fe8a-4815-979e-f5a0a1dc537b_image_picker_2C6C09D2-2428-4910-B63D-2AE49B765CDA-1557-00000085F41B5965.jpg.jpg" class="post-image" alt="갓생 이미지">
+                <img src="/post/image/20250403/5/81eed0cb-6f2d-441e-bb09-93e10dc704d1.png" class="post-image" alt="갓생 이미지">
                 <img src="/icon/success.png" alt="갓생성공" class="badge">
             </div>
             <div class="post-meta">
@@ -212,7 +224,7 @@
         </div>
         <div class="post-card" onclick="openModal('dummy1')">
             <div class="image-wrapper">
-                <img src="https://api.dopaminedefense.team/file/image/b01cae63-fe8a-4815-979e-f5a0a1dc537b_image_picker_2C6C09D2-2428-4910-B63D-2AE49B765CDA-1557-00000085F41B5965.jpg.jpg" class="post-image" alt="갓생 이미지">
+                <img src="/post/image/20250403/5/81eed0cb-6f2d-441e-bb09-93e10dc704d1.png" class="post-image" alt="갓생 이미지">
                 <img src="/icon/success.png" alt="갓생성공" class="badge">
             </div>
             <div class="post-meta">
@@ -220,7 +232,7 @@
                 <img src="/icon/empty_heart.png" alt="좋아요" class="icon" onclick="toggleLike(event, this)"> 42
             </div>
             <div class="post-caption">✏️ 오늘 새벽 기상 성공!</div>
-        </div>
+        </div>-->
 
         <!-- 더미 반복... -->
     </div>
@@ -302,6 +314,11 @@
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
     let imageList = [];
+    let currentPage = 0;
+    var isLastPage = false;
+    var isLoading = false;
+    var sortKeyword = "created";
+    var sortDirection = "DESC";
 
     function openModal(id) {
         document.getElementById('postModal').classList.remove('hidden');
@@ -450,6 +467,173 @@
         event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
     }
 
+    document.getElementById("uploadForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // 기본 form submit 막기
+
+        const content = document.querySelector("#uploadForm textarea").value.trim();
+
+        if (!content) {
+            alert("내용을 입력해주세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("content", content);
+        imageList.forEach(file => formData.append("images", file));
+
+        fetch("/post", {
+            method: "POST",
+            body: formData
+        })
+            .then(async res => {
+                if (!res.ok) {
+                    const body = await res.json();
+                    throw new Error(body.message || "업로드 실패");
+                }
+                return res.json();
+            })
+            .then(data => {
+                alert("업로드 성공!");
+                closeUploadModal();
+                location.reload(); // 업로드 후 새로고침
+            })
+            .catch(err => {
+                alert(err.message || "오류 발생");
+            });
+    });
+
+    /**  게시물 렌더링  **/
+    function onSortChange() {
+        const value = document.getElementById("sortSelect").value;
+        const [keyword, direction] = value.split(",");
+        sortKeyword = keyword;
+        sortDirection = direction;
+
+        currentPage = 0;
+        isLastPage = false;
+        document.querySelector(".post-list").innerHTML = "";
+        loadPosts(true);
+    }
+
+    function loadPosts(initial = false) {
+        if (isLoading || isLastPage) return;
+        isLoading = true;
+        console.log(sortKeyword);
+        console.log(sortDirection);
+        fetch(`/post?sortKeyword=${sortKeyword}&sortDirection=${sortDirection}&page=${currentPage}&size=5`)
+            .then(res => res.json())
+            .then(data => {
+                const posts = data.data.content;
+                const listEl = document.querySelector(".post-list");
+
+                posts.forEach(post => {
+                    const card = document.createElement("div");
+                    card.className = "post-card";
+
+                    const imageSlider = document.createElement("div");
+                    imageSlider.className = "image-slider";
+
+                    const imageWrapper = document.createElement("div");
+                    imageWrapper.className = "image-wrapper-multiple";
+
+                    // 이미지 여러 개 슬라이드
+                    post.images.forEach(url => {
+                        const img = document.createElement("img");
+                        img.src = url;
+                        img.className = "slide-image";
+                        imageWrapper.appendChild(img);
+                    });
+
+                    // 슬라이더에 이미지 래퍼 추가
+                    imageSlider.appendChild(imageWrapper);
+
+                    // 인디케이터 (● ● ●)
+                    const indicator = document.createElement("div");
+                    indicator.className = "image-indicator";
+                    post.images.forEach((_, index) => {
+                        const dot = document.createElement("span");
+                        dot.className = "dot" + (index === 0 ? " active" : "");
+                        indicator.appendChild(dot);
+                    });
+
+                    imageSlider.appendChild(indicator);
+
+                    card.appendChild(imageSlider);
+
+                    card.innerHTML += `
+                        <div class="post-meta">
+                            <img src="/icon/visibility.png" class="icon"> ${post.viewCount}
+                            &nbsp;<img src="/icon/empty_heart.png" class="icon" onclick="toggleLike(event, this)"> ${post.likeCount}
+                        </div>
+                        <div class="post-caption">✏️ ${post.content}</div>
+                    `;
+
+                    listEl.appendChild(card);
+
+                    // 슬라이드 기능 추가
+                    if (post.images.length > 1) {
+                        requestAnimationFrame(() => {
+                            initSlider(imageWrapper, indicator);
+                        });
+                    }
+                });
+
+                isLastPage = data.data.last;
+                if (!isLastPage) currentPage++;
+            })
+            .finally(() => isLoading = false);
+    }
+
+    /*function observeScroll() {
+        const sentinel = document.getElementById("scroll-sentinel");
+        const observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+                loadPosts();
+            }
+        }, { threshold: 1.0 });
+        observer.observe(sentinel);
+    }*/
+
+    function initSlider(wrapper, indicator) {
+        let currentIndex = 0;
+        const images = wrapper.children;
+        const dots = indicator.children;
+        const total = images.length;
+
+        // 💡 wrapper 너비 설정
+        wrapper.style.width = `${total * 100}%`;
+
+        let startX = 0;
+        let deltaX = 0;
+
+        wrapper.addEventListener("touchstart", (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        wrapper.addEventListener("touchmove", (e) => {
+            deltaX = e.touches[0].clientX - startX;
+        });
+
+        wrapper.addEventListener("touchend", (e) => {
+            if (Math.abs(deltaX) > 30) {
+                if (deltaX < 0 && currentIndex < total - 1) currentIndex++;
+                else if (deltaX > 0 && currentIndex > 0) currentIndex--;
+            }
+            updateSlider();
+            deltaX = 0;
+        });
+
+        function updateSlider() {
+            console.log("updateSlider");
+            wrapper.style.transform = `translateX(-${(100 / total) * currentIndex}%)`;
+
+            Array.from(dots).forEach(dot => dot.classList.remove("active"));
+            if (dots[currentIndex]) dots[currentIndex].classList.add("active");
+        }
+
+        updateSlider(); // 초기 실행
+    }
+
     // 💡 아래에서 위로 스와이프 감지
     let startY = 0;
     const modal = document.getElementById("uploadModal");
@@ -467,6 +651,11 @@
         if (e.key === 'Enter') {
             login();
         }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+        loadPosts(true);
+        //observeScroll();
     });
 </script>
 </html>

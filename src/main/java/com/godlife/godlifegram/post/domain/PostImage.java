@@ -19,7 +19,16 @@ public class PostImage extends BaseEntity {
 
     private String imageUrl; // S3 URL
 
+    private Double size;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
 
+    public static PostImage upload(Post post, String url, Double size) {
+        PostImage postImage = new PostImage();
+        postImage.post = post;
+        postImage.imageUrl = url;
+        postImage.size = size;
+        return postImage;
+    }
 }

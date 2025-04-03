@@ -48,6 +48,9 @@ dependencies {
     // AWS S3
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.663'
 
+    // Image resize
+    implementation 'net.coobird:thumbnailator:0.4.19'
+
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     implementation 'org.springframework.boot:spring-boot-starter'
