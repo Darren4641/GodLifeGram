@@ -106,6 +106,32 @@
     </div>
 
     <!-- ✅ 로그인/회원가입 모달 -->
+    <div id="signupModal" class="modal hidden">
+        <div class="modal-content" style="position: relative;">
+            <button class="close" onclick="closeSignupModal()" style="
+            position: absolute;
+            top: 1%;
+            right: 1%;
+            background: none;
+            border: none;
+            font-size: 1.7rem;
+            color: #000000;
+            width: auto;
+            cursor: pointer;
+        ">&times;</button>
+            <form class="signup-box" onsubmit="return handleSignup(event)">
+                <h3>회원가입</h3>
+                <input type="email" name="email" id="email" placeholder="이메일" required>
+                <input type="text" name="nickname" id="nickname" placeholder="닉네임" required>
+                <input type="password" name="password" id="pw1" placeholder="비밀번호" required>
+                <input type="password" id="pw2" placeholder="비밀번호 확인" required>
+                <div class="error" id="pwError"></div>
+                <button type="submit" class="loginBtn">가입하기</button>
+            </form>
+        </div>
+
+    </div>
+
     <div id="authModal" class="modal hidden">
         <div class="modal-content" style="position: relative;">
             <button class="close" onclick="closeAuthModal()" style="
@@ -127,7 +153,7 @@
             <button class="loginBtn" onclick="login()">로그인하기</button>
 
             <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
-                계정이 없으신가요? <a href="/signup" style="color: #b0aaaac2; text-decoration: none;">회원가입</a>
+                계정이 없으신가요? <a href="javascript:void(0);" onclick="openSignupModal()" style="color: #b0aaaac2; text-decoration: none;">회원가입</a>
             </p>
         </div>
 
@@ -267,6 +293,8 @@
         }
     }
 
+
+
     function closeAuthModal() {
         document.getElementById('authModal').classList.add('hidden');
     }
@@ -316,6 +344,58 @@
     function showLogin() {
         document.getElementById('authModal').classList.remove('hidden');
     }
+
+    function openSignupModal() {
+        closeAuthModal();
+        document.getElementById("signupModal").classList.remove("hidden");
+    }
+
+    function closeSignupModal() {
+        document.getElementById("signupModal").classList.add("hidden");
+    }
+
+    function handleSignup(event) {
+        event.preventDefault(); // 폼 전송 막기
+
+        const email = document.getElementById('email').value;
+        const nickname = document.getElementById('nickname').value;
+        const pw1 = document.getElementById('pw1').value;
+        const pw2 = document.getElementById('pw2').value;
+        const errorDiv = document.getElementById('pwError');
+
+        if (pw1 !== pw2) {
+            errorDiv.textContent = "비밀번호가 일치하지 않습니다.";
+            return false;
+        }
+
+        fetch("/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: email,
+                nickname: nickname,
+                password: pw1
+            })
+        })
+            .then(response => {
+                return response.json().then(body => ({ status: response.status, body })); // 응답을 객체로 변환
+            })
+            .then(({ status, body }) => {
+                if (status >= 400) {
+                    errorDiv.textContent = body.errors?.length > 0 ? body.errors[0].message : body.message || "서버 오류 발생";
+                    return;
+                }
+
+                alert("회원가입 완료! 로그인 되었습니다.");
+                location.reload();
+            })
+            .catch(err => {
+                errorDiv.textContent = err.message || "오류가 발생했습니다.";
+            });
+
+        return false;
+    }
+
     function goMyPage() {
         const isLoggedIn = sessionStorage.getItem('loggedIn');
         if (isLoggedIn) {
