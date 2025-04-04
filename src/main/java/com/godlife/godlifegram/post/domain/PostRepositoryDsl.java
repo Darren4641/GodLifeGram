@@ -57,9 +57,6 @@ public class PostRepositoryDsl {
         Long count = Optional.ofNullable(queryFactory
                 .select(post.id.count())
                 .from(post)
-                .join(post.user, user)
-                .join(postImage).on(postImage.post.id.eq(post.id))
-                .groupBy(post.id)
                 .fetchOne()).orElse(0L);
 
         List<ViewResponseDto> content = result.stream().map(it -> {

@@ -18,6 +18,9 @@
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
     <link rel="stylesheet" href="/css/common.css" th:href="@{/css/common.css}">
     <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
@@ -27,6 +30,13 @@
             font-family: 'Helvetica Neue', sans-serif;
             background: #fafafa;
             margin: 0;
+        }
+
+        .post-caption-content.expanded {
+            -webkit-line-clamp: unset;
+            overflow: visible;
+            text-overflow: initial;
+            white-space: pre-line;
         }
         .nav {
             display: flex;
@@ -88,12 +98,54 @@
             object-fit: cover;
             border-bottom: 1px solid #eee;
         }
+        .post-caption-container {
+            padding: 0.6rem 1rem 1rem 0.8rem;
+            font-size: 14px;
+            color: #333;
+            line-height: 20px;
+            position: relative;
+            display: inline;
+        }
 
-        .post-caption {
+
+        .post-caption-nickname {
             padding: 0.6rem 1rem 1rem 0.8rem;
             font-size: 0.9rem; /* 살짝 줄임 */
             color: #333;
         }
+
+.post-caption-content {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: pre-line;
+  }
+
+.post-caption-content.truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.post-caption-content.expanded {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    text-overflow: initial;
+}
+
+
+.read-more {
+    display: inline;
+    color: #888;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: 4px;
+}
 
         .post-meta {
             padding: 0.6rem 1rem 0rem 0.7rem;
@@ -204,8 +256,8 @@
         <label for="sortSelect">정렬 기준:</label>
         <select id="sortSelect" onchange="onSortChange()">
             <option value="created,DESC">최신순</option>
-            <option value="like,DESC">좋아요순</option>
-            <option value="view,DESC">조회수순</option>
+            <option value="like,DESC">좋아요</option>
+            <option value="view,DESC">조회수</option>
         </select>
     </div>
 
@@ -251,12 +303,13 @@
         <div class="modal-content" style="position: relative;">
             <button class="close" onclick="closeAuthModal()" style="
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 1%;
+            right: 1%;
             background: none;
             border: none;
             font-size: 1.7rem;
             color: #000000;
+            width: auto;
             cursor: pointer;
         ">&times;</button>
 
@@ -314,9 +367,12 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="imageViewClose" onclick="closeImageViewModal()" style="
           position: fixed;
-          top: 20px;
-          right: 10px;
+          top: 1%;
+          right: 1%;
           font-size: 30px;
+          margin: 0;
+          padding: 10px;
+          width: auto;
           background: none;
           border: none;
           color: white;
@@ -324,7 +380,7 @@
           cursor: pointer;
         ">&times;</button>
         <div class="modal-content" onclick="event.stopPropagation()" style="position: relative;">
-            <button onclick="prevImage()" style="
+            <button class="prevImage" onclick="prevImage()" style="
               position: absolute;
               left: 10px;
               top: 50%;
@@ -332,7 +388,9 @@
               font-size: 60px;
               background: none;
               border: none;
-              color: white;
+              opacity: 0;
+              width: 50%;
+              height: 100%;
               z-index: 1001;
               cursor: pointer;
           ">‹</button>
@@ -344,7 +402,20 @@
               object-fit: contain;
               border-radius: 10px;
           ">
-            <button onclick="nextImage()" style="
+            <div id="imageIndicatorContainer" style="
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 6px;
+                background: rgba(0, 0, 0, 0.4);
+                padding: 4px 10px;
+                border-radius: 10px;
+                z-index: 1002;
+            ">
+            </div>
+            <button class="prevImage" onclick="nextImage()" style="
               position: absolute;
               right: 10px;
               top: 50%;
@@ -352,7 +423,9 @@
               font-size: 60px;
               background: none;
               border: none;
-              color: white;
+              opacity: 0;
+              width: 50%;
+              height: 100%;
               z-index: 1001;
               cursor: pointer;
           ">›</button>
@@ -619,11 +692,29 @@
                             <img src="/icon/visibility.png" class="icon"> ${post.viewCount}
                             &nbsp;<img src="/icon/empty_heart.png" class="icon" onclick="toggleLike(event, this)"> ${post.likeCount}
                         </div>
-                        <div class="post-caption">✏️ ${post.content}</div>
+                        <div class="post-caption-nickname" style="padding: 0.6rem 0rem 0rem 0.8rem;">@${post.nickname}</div>
+                        <div class="post-caption-container">
+                            <div class="post-caption-content">${post.content}</div>
+                            <span class="read-more" onclick="expandCaption(this)" style="display: none;">더보기</span>
+                        </div>
+
+
                     `;
 
                     listEl.appendChild(card);
 
+                    requestAnimationFrame(() => {
+                        const captionEl = card.querySelector('.post-caption-content');
+                        const readMoreEl = card.querySelector('.read-more');
+
+                        const lineHeight = parseFloat(getComputedStyle(captionEl).lineHeight);
+                        const maxHeight = lineHeight * 2;
+
+                        if (captionEl.scrollHeight > maxHeight + 2) {
+                            captionEl.classList.add('truncated');
+                            readMoreEl.style.display = 'inline';
+                        }
+                    });
                 });
 
                 isLastPage = data.data.last;
@@ -666,6 +757,19 @@
     function updateImageView() {
         const img = document.getElementById('modalImageView');
         img.src = currentImages[currentImageIndex];
+
+        const indicatorContainer = document.getElementById('imageIndicatorContainer');
+        indicatorContainer.innerHTML = ""; // 초기화
+
+        currentImages.forEach((_, i) => {
+            const dot = document.createElement("span");
+            dot.style.width = "7px";
+            dot.style.height = "7px";
+            dot.style.borderRadius = "50%";
+            dot.style.background = i === currentImageIndex ? "white" : "#bbb";
+            dot.style.transition = "background 0.3s";
+            indicatorContainer.appendChild(dot);
+        });
     }
 
     function prevImage() {
@@ -680,6 +784,13 @@
             currentImageIndex++;
             updateImageView();
         }
+    }
+
+    function expandCaption(button) {
+        const caption = button.previousElementSibling;
+        caption.classList.remove('truncated');
+        caption.classList.add('expanded');
+        button.remove();
     }
 
     // 💡 아래에서 위로 스와이프 감지
@@ -703,6 +814,8 @@
 
     window.addEventListener("DOMContentLoaded", () => {
         loadPosts(true);
+
+
         //observeScroll();
     });
 </script>
