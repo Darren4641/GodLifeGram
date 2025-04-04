@@ -3,7 +3,9 @@ package com.godlife.godlifegram.post.application.service.impl;
 import com.godlife.godlifegram.common.exception.ApiErrorException;
 import com.godlife.godlifegram.common.response.enums.ResultCode;
 import com.godlife.godlifegram.post.application.converter.PostConverter;
+import com.godlife.godlifegram.post.application.dto.request.LikeRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.UploadRequestSvcDto;
+import com.godlife.godlifegram.post.application.dto.response.LikeResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.UploadResponseSvcDto;
 import com.godlife.godlifegram.post.application.service.PostService;
 import com.godlife.godlifegram.post.domain.*;
@@ -25,6 +27,7 @@ public class PostServiceImpl implements PostService  {
     private final PostConverter postConverter;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
     private final PostRepositoryDsl postRepositoryDsl;
     private final PostImageRepository postImageRepository;
 
@@ -48,6 +51,31 @@ public class PostServiceImpl implements PostService  {
 
     @Override
     public Page<ViewResponseDto> getPosts(ViewPostRequestDto viewPostRequestDto) {
-        return postRepositoryDsl.getPostsOfPage(viewPostRequestDto.getPageable(), viewPostRequestDto.getSortKeyword(), viewPostRequestDto.getSortDirection());
+        return postRepositoryDsl.getPostsOfPage(viewPostRequestDto.getPageable(), viewPostRequestDto.getSortKeyword(), viewPostRequestDto.getUuid(), viewPostRequestDto.getSortDirection());
+    }
+
+    @Override
+    @Transactional
+    public LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto) {
+        Post post = postRepository.findById(likeRequestSvcDto.getPostId())
+                        .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        PostLike postLike = postLikeRepository.findByUuidAndPost(likeRequestSvcDto.getUuid(), post).orElse(null);
+
+
+        if(postLike == null && likeRequestSvcDto.getIsLiked()) {
+            PostLike newPostLike = PostLike.like(likeRequestSvcDto.getUuid(), post);
+            postLikeRepository.save(newPostLike);
+        } else if(postLike != null && !likeRequestSvcDto.getIsLiked()) {
+            postLikeRepository.delete(postLike);
+        } else {
+            throw new ApiErrorException(ResultCode.ERROR);
+        }
+
+        return postConverter.toLikeResponseSvcDto(
+                post.getId(),
+                likeRequestSvcDto.getUuid(),
+                likeRequestSvcDto.getIsLiked()
+        );
     }
 }

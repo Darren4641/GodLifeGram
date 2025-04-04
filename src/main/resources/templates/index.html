@@ -100,7 +100,7 @@
         }
         .post-caption-container {
             padding: 0.6rem 1rem 1rem 0.8rem;
-            font-size: 14px;
+            font-size: 12px;
             color: #333;
             line-height: 20px;
             position: relative;
@@ -112,6 +112,7 @@
             padding: 0.6rem 1rem 1rem 0.8rem;
             font-size: 0.9rem; /* 살짝 줄임 */
             color: #333;
+            font-weight: bold;
         }
 
 .post-caption-content {
@@ -144,11 +145,10 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    margin-left: 4px;
 }
 
         .post-meta {
-            padding: 0.6rem 1rem 0rem 0.7rem;
+            padding: 0.6rem 0rem 0rem 0rem;
             color: #888;
             font-size: 0.8rem;
         }
@@ -197,7 +197,7 @@
         }
 
         .loginBtn {
-            background: #3897f0;
+            background: #0a0a0ac2;
             color: white;
             border: none;
             padding: 0.6rem 1.2rem;
@@ -320,7 +320,7 @@
             <button class="loginBtn" onclick="login()">로그인하기</button>
 
             <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
-                계정이 없으신가요? <a href="/signup" style="color: #3897f0; text-decoration: none;">회원가입</a>
+                계정이 없으신가요? <a href="/signup" style="color: #b0aaaac2; text-decoration: none;">회원가입</a>
             </p>
         </div>
 
@@ -518,7 +518,7 @@
         }
     }
 
-    function toggleLike(event, icon) {
+    function toggleLike(event, icon, postId) {
         event.stopPropagation();
         // 하트 이미지 교체
         const isLiked = icon.getAttribute("src").includes("empty_heart");
@@ -530,6 +530,32 @@
             let count = parseInt(countNode.textContent.trim());
             countNode.textContent = isLiked ? ` ${count + 1}` : ` ${count - 1}`;
         }
+
+        const uuid = registerUUID();
+
+        fetch("/post/like", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                postId: postId,
+                uuid: uuid,
+                isLiked: isLiked
+            })
+        })
+            .then(async res => {
+                const response = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 400) {
+                        alert(response.message || "요청 형식 오류");
+                        return;
+                    }
+                }
+            })
+            .catch(err => {
+                alert("좋아요 처리 중 오류 발생: " + err.message);
+            });
+
 
         // ❤️ 하트 애니메이션 (좋아요일 때만)
         if (isLiked) {
@@ -645,7 +671,8 @@
         isLoading = true;
         console.log(sortKeyword);
         console.log(sortDirection);
-        fetch(`/post?sortKeyword=${sortKeyword}&sortDirection=${sortDirection}&page=${currentPage}&size=5`)
+        const uuid = registerUUID();
+        fetch(`/post?uuid=${uuid}&sortKeyword=${sortKeyword}&sortDirection=${sortDirection}&page=${currentPage}&size=5`)
             .then(res => res.json())
             .then(data => {
                 const posts = data.data.content;
@@ -687,18 +714,27 @@
 
                     card.appendChild(imageSlider);
 
+                    const createdText = getRelativeTime(post.createdDate);
+
                     card.innerHTML += `
-                        <div class="post-meta">
-                            <img src="/icon/visibility.png" class="icon"> ${post.viewCount}
-                            &nbsp;<img src="/icon/empty_heart.png" class="icon" onclick="toggleLike(event, this)"> ${post.likeCount}
+                        <div style="display: flex; align-items: center;">
+                            <div class="post-caption-nickname" style="padding: 0.6rem 0rem 0rem 0.8rem;">@${post.nickname}</div>
+                            <div class="post-meta">
+                                &nbsp;<img
+                                src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
+                                class="icon"
+                                onclick="toggleLike(event, this, ${post.id})"
+                            > ${post.likeCount}
+                            </div>
                         </div>
-                        <div class="post-caption-nickname" style="padding: 0.6rem 0rem 0rem 0.8rem;">@${post.nickname}</div>
+                        <div class="post-meta" style="padding: 0.2rem 0.8rem 0rem 0.8rem; font-size: 10px; color: #888;">
+                            ${createdText}
+                        </div>
+
                         <div class="post-caption-container">
                             <div class="post-caption-content">${post.content}</div>
                             <span class="read-more" onclick="expandCaption(this)" style="display: none;">더보기</span>
                         </div>
-
-
                     `;
 
                     listEl.appendChild(card);
@@ -793,6 +829,34 @@
         button.remove();
     }
 
+    function getRelativeTime(dateStr) {
+        const created = new Date(dateStr.replace(" ", "T")); // 서버 시간 문자열 → JS Date
+        const now = new Date();
+
+        const diffMs = now - created;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHr = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHr / 24);
+
+        if (diffSec < 60) return `${diffSec}초 전`;
+        if (diffMin < 60) return `${diffMin}분 전`;
+        if (diffHr < 24) return `${diffHr}시간 전`;
+        if (diffDay < 7) return `${diffDay}일 전`;
+
+        // 일주일 이상은 날짜로
+        return created.toLocaleDateString('ko-KR', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        });
+    }
+
+    function registerUUID() {
+        if (!localStorage.getItem('godlife_uuid')) {
+            localStorage.setItem('godlife_uuid', 'uuid_' + crypto.randomUUID());
+        }
+        return localStorage.getItem('godlife_uuid')
+    }
+
     // 💡 아래에서 위로 스와이프 감지
     let startY = 0;
     const modal = document.getElementById("uploadModal");
@@ -813,6 +877,7 @@
     });
 
     window.addEventListener("DOMContentLoaded", () => {
+        registerUUID();
         loadPosts(true);
 
 

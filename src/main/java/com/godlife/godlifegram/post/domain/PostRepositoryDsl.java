@@ -2,9 +2,13 @@ package com.godlife.godlifegram.post.domain;
 
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static com.godlife.godlifegram.post.domain.QPost.post;
 import static com.godlife.godlifegram.post.domain.QPostImage.postImage;
+import static com.godlife.godlifegram.post.domain.QPostLike.postLike;
 import static com.godlife.godlifegram.user.domain.user.QUser.user;
 
 @Repository
@@ -30,23 +35,33 @@ import static com.godlife.godlifegram.user.domain.user.QUser.user;
 public class PostRepositoryDsl {
     private final JPAQueryFactory queryFactory;
 
-    public Page<ViewResponseDto> getPostsOfPage(Pageable pageable, String sortKeyword, Order sortDirection) {
+    public Page<ViewResponseDto> getPostsOfPage(Pageable pageable, String sortKeyword, String uuid, Order sortDirection) {
         // 정렬 조건 설정
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortKeyword, sortDirection);
+
         StringTemplate imageUrls = Expressions.stringTemplate("group_concat(distinct {0})", postImage.imageUrl);
+
+        Expression<Integer> isLiked = ExpressionUtils.as(
+                new CaseBuilder()
+                        .when(postLike.uuid.eq(uuid)).then(1)
+                        .otherwise(0)
+                        .max(),
+                "isLiked"
+        );
 
         List<Tuple> result = queryFactory
                 .select(
                         post.id,
                         post.content,
-                        post.likeCount,
-                        post.viewCount,
+                        postLike.id.countDistinct(),
                         user.nickname,
                         imageUrls,
+                        isLiked,
                         post.createdDate
                 )
                 .from(post)
                 .join(post.user, user)
+                .leftJoin(postLike).on(postLike.post.id.eq(post.id))
                 .leftJoin(postImage).on(postImage.post.id.eq(post.id))
                 .groupBy(post.id)
                 .orderBy(orderSpecifier)
@@ -72,10 +87,10 @@ public class PostRepositoryDsl {
             return new ViewResponseDto(
                     it.get(post.id),
                     it.get(post.content),
-                    it.get(post.likeCount),
-                    it.get(post.viewCount),
+                    it.get(postLike.id.countDistinct()),
                     it.get(user.nickname),
                     images,
+                    it.get(isLiked) != null && it.get(isLiked) == 1,
                     it.get(post.createdDate)
             );
         })

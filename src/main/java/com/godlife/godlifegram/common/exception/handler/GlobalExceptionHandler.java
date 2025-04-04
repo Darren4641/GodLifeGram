@@ -4,6 +4,7 @@ package com.godlife.godlifegram.common.exception.handler;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.godlife.godlifegram.common.exception.ApiErrorException;
+import com.godlife.godlifegram.common.exception.UUIDErrorException;
 import com.godlife.godlifegram.common.exception.dto.ExceptionMsg;
 import com.godlife.godlifegram.common.exception.dto.FieldErrorDetail;
 import com.godlife.godlifegram.common.response.enums.ResultCode;
@@ -26,6 +27,14 @@ public class GlobalExceptionHandler {
             new ExceptionMsg(ResultCode.ERROR.getMessage(), ResultCode.ERROR.getCode(), false, List.of()),
             HttpStatus.BAD_REQUEST
     );
+
+    @ExceptionHandler(UUIDErrorException.class)
+    public ResponseEntity<ExceptionMsg> handleUUIDErrorException(UUIDErrorException ex) {
+        return new ResponseEntity<>(
+                new ExceptionMsg(ResultCode.SECURITY_ERROR.getMessage(), ResultCode.SECURITY_ERROR.getCode(), false, List.of()),
+                HttpStatus.FORBIDDEN
+        );
+    }
 
     @ExceptionHandler(ApiErrorException.class)
     public ResponseEntity<ExceptionMsg> handleApiErrorException(ApiErrorException ex) {

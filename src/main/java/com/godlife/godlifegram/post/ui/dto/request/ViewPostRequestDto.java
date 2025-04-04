@@ -1,6 +1,7 @@
 package com.godlife.godlifegram.post.ui.dto.request;
 
 import com.querydsl.core.types.Order;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,8 @@ public class ViewPostRequestDto {
     private Order sortDirection = Order.ASC;
     private int page = 0;
     private int size = 10;
+    @NotBlank(message = "uuid는 필수 값입니다.")
+    private String uuid;
 
     public Pageable getPageable() {
         return PageRequest.of(page, size);

@@ -15,9 +15,9 @@ public class ViewResponseDto {
     private Long id;
     private String content;
     private Long likeCount;
-    private Long viewCount;
     private String nickname;
     private List<String> images;
+    private Boolean isLiked;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdDate;
 }
