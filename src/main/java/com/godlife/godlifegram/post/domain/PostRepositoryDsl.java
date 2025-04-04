@@ -102,7 +102,7 @@ public class PostRepositoryDsl {
     private OrderSpecifier<?> getOrderSpecifier(String keyword, Order direction) {
 
         return switch (keyword) {
-            case "like" -> new OrderSpecifier<>(direction, post.likeCount);
+            case "like" -> new OrderSpecifier<>(direction, postLike.id.countDistinct());
             case "view" -> new OrderSpecifier<>(direction, post.viewCount);
             case "created" -> new OrderSpecifier<>(direction, post.createdDate);
             default -> new OrderSpecifier<>(direction, post.createdDate);

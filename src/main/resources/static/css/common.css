@@ -34,6 +34,226 @@ html, body {
     padding: 1rem 0.8rem;
 }
 
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background: #fafafa;
+    margin: 0;
+}
+
+.post-caption-content.expanded {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    text-overflow: initial;
+    white-space: pre-line;
+}
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem;
+    background: white;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+}
+.nav button {
+    margin-left: 0.5rem;
+    background: none;
+    border: none;
+    font-weight: normal;
+    color: #888;
+    cursor: pointer;
+}
+.nav-left img {
+    max-width: 100px;
+}
+
+.nav-wrapper {
+    position: relative;
+}
+
+.nav.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 999;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.nav-placeholder {
+    height: 60px; /* nav 높이랑 동일하게 */
+    display: none;
+}
+
+.nav.fixed + .nav-placeholder {
+    display: block;
+}
+
+.header {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+.upload-button {
+    background: #0a0a0ac2;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+.post-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    touch-action: pan-y;
+}
+.post-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 700px;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-image {
+    width: 100%;
+    height: 180px; /* 💡 높이 줄이기 (기존보다 낮게) */
+    object-fit: cover;
+    border-bottom: 1px solid #eee;
+}
+.post-caption-container {
+    padding: 0.6rem 1rem 1rem 0.8rem;
+    font-size: 12px;
+    color: #333;
+    line-height: 20px;
+    position: relative;
+    display: inline;
+}
+
+
+.post-caption-nickname {
+    padding: 0.6rem 1rem 1rem 0.8rem;
+    font-size: 0.9rem; /* 살짝 줄임 */
+    color: #333;
+    font-weight: bold;
+}
+
+.post-caption-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+}
+
+.post-caption-content.truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.post-caption-content.expanded {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    text-overflow: initial;
+}
+
+
+.read-more {
+    display: inline;
+    color: #888;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.post-meta {
+    padding: 0.6rem 0rem 0rem 0rem;
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal.hidden { display: none; }
+.modal-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+}
+.modal-content input {
+    display: block;
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+}
+#authModal .modal-content {
+    padding: 2rem;
+    margin: 1rem;
+    text-align: center;
+    position: relative;
+}
+
+#authModal h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+#authModal input {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+
+.loginBtn {
+    background: #0a0a0ac2;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.image-wrapper {
+    position: relative;
+}
+
+.badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 64px;
+    height: auto;
+    z-index: 2;
+}
+
+
 .prevImage {
     -webkit-tap-highlight-color: transparent; /* iOS/Android 터치 하이라이트 제거 */
     -webkit-focus-ring-color: transparent;    /* iOS 버튼 포커스 테두리 제거 */
@@ -137,7 +357,7 @@ html, body {
     bottom: -100%;
     left: 0;
     width: 100vw; /* 📱화면 너비 기준 */
-    height: 85vh; /* 화면 높이의 85% */
+    height: 70vh; /* 화면 높이의 85% */
     background: white;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
@@ -176,6 +396,7 @@ html, body {
     border: none;
     font-size: 1.2rem;
     cursor: pointer;
+    color: #000000;
 }
 
 .upload-form textarea {

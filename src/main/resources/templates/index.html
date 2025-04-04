@@ -26,222 +26,30 @@
     <meta name="theme-color" content="#ffffff">
     <title>#갓생그램</title>
     <style>
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background: #fafafa;
-            margin: 0;
-        }
-
-        .post-caption-content.expanded {
-            -webkit-line-clamp: unset;
-            overflow: visible;
-            text-overflow: initial;
-            white-space: pre-line;
-        }
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.7rem;
-            background: white;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-        }
-        .nav button {
-            margin-left: 0.5rem;
-            background: none;
-            border: none;
-            font-weight: normal;
-            color: #888;
-            cursor: pointer;
-        }
-        .nav-left img {
-            max-width: 100px;
-        }
-        .header {
-            text-align: center;
-            padding: 1.5rem 1rem;
-        }
-        .upload-button {
-            background: #0a0a0ac2;
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            margin-top: 1rem;
-            cursor: pointer;
-        }
-        .post-list {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            touch-action: pan-y;
-        }
-        .post-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 700px;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .post-image {
-            width: 100%;
-            height: 180px; /* 💡 높이 줄이기 (기존보다 낮게) */
-            object-fit: cover;
-            border-bottom: 1px solid #eee;
-        }
-        .post-caption-container {
-            padding: 0.6rem 1rem 1rem 0.8rem;
-            font-size: 12px;
-            color: #333;
-            line-height: 20px;
-            position: relative;
-            display: inline;
-        }
-
-
-        .post-caption-nickname {
-            padding: 0.6rem 1rem 1rem 0.8rem;
-            font-size: 0.9rem; /* 살짝 줄임 */
-            color: #333;
-            font-weight: bold;
-        }
-
-.post-caption-content {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: pre-line;
-  }
-
-.post-caption-content.truncated {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.post-caption-content.expanded {
-    -webkit-line-clamp: unset;
-    overflow: visible;
-    text-overflow: initial;
-}
-
-
-.read-more {
-    display: inline;
-    color: #888;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-        .post-meta {
-            padding: 0.6rem 0rem 0rem 0rem;
-            color: #888;
-            font-size: 0.8rem;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal.hidden { display: none; }
-        .modal-content {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-        }
-        .modal-content input {
-            display: block;
-            width: 100%;
-            margin: 0.5rem 0;
-            padding: 0.5rem;
-        }
-        #authModal .modal-content {
-            padding: 2rem;
-            margin: 1rem;
-            text-align: center;
-            position: relative;
-        }
-
-        #authModal h3 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        #authModal input {
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 1rem;
-            margin: 0.5rem 0;
-        }
-
-        .loginBtn {
-            background: #0a0a0ac2;
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            font-size: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 1rem;
-            width: 100%;
-        }
-
-        .image-wrapper {
-            position: relative;
-        }
-
-        .badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 64px;
-            height: auto;
-            z-index: 2;
-        }
-
-
     </style>
 </head>
 <body>
 <div class="wrapper">
     <!-- 네비게이션, 헤더, 포스트 목록 등 전체 내용 -->
     <!-- ✅ 네비게이션 바 -->
-    <nav class="nav">
-        <div class="nav-left"><img src="/image/logo.png" alt="logo"></div>
-        <div class="nav-right">
-            <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
-            <button th:if="${user != null}" onclick="logout()">
-                로그아웃
-            </button>
+    <div class="nav-wrapper">
+        <nav class="nav">
+            <div class="nav-left"><img src="/image/logo.png" alt="logo"></div>
+            <div class="nav-right">
+                <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
+                <button th:if="${user != null}" onclick="logout()">
+                    로그아웃
+                </button>
 
-            <!-- 비로그인 상태: 로그인 버튼 -->
-            <button th:unless="${user != null}" onclick="showLogin()">
-                로그인
-            </button>
-        </div>
-    </nav>
+                <!-- 비로그인 상태: 로그인 버튼 -->
+                <button th:unless="${user != null}" onclick="showLogin()">
+                    로그인
+                </button>
+            </div>
+        </nav>
+        <div class="nav-placeholder"></div>
+    </div>
+
 
     <!-- ✅ 상단 메시지 + 버튼 -->
     <div class="header">
@@ -257,7 +65,6 @@
         <select id="sortSelect" onchange="onSortChange()">
             <option value="created,DESC">최신순</option>
             <option value="like,DESC">좋아요</option>
-            <option value="view,DESC">조회수</option>
         </select>
     </div>
 
@@ -858,7 +665,7 @@
     }
 
     // 💡 아래에서 위로 스와이프 감지
-    let startY = 0;
+    /*let startY = 0;
     const modal = document.getElementById("uploadModal");
     modal.addEventListener("touchstart", e => {
         startY = e.touches[0].clientY;
@@ -868,7 +675,7 @@
         if (currentY - startY > 80) { // 아래로 스와이프
             closeUploadModal();
         }
-    });
+    });*/
 
     document.getElementById('authModal').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
@@ -877,6 +684,22 @@
     });
 
     window.addEventListener("DOMContentLoaded", () => {
+        const nav = document.querySelector(".nav");
+        const navWrapper = document.querySelector(".nav-wrapper");
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (!entry.isIntersecting) {
+                    nav.classList.add("fixed");
+                } else {
+                    nav.classList.remove("fixed");
+                }
+            },
+            { threshold: 0 }
+        );
+
+        observer.observe(navWrapper);
+
         registerUUID();
         loadPosts(true);
 
