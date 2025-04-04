@@ -255,7 +255,7 @@
             right: 10px;
             background: none;
             border: none;
-            font-size: 1.2rem;
+            font-size: 1.7rem;
             cursor: pointer;
         ">&times;</button>
 
@@ -309,6 +309,55 @@
         <button type="submit" class="upload-submit">업로드</button>
     </form>
 </div>
+<div id="imageViewModal" class="modal hidden" onclick="closeImageViewModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="imageViewClose" onclick="closeImageViewModal()" style="
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          font-size: 2rem;
+          background: none;
+          border: none;
+          color: white;
+          z-index: 1002;
+          cursor: pointer;
+        ">&times;</button>
+        <div class="modal-content" onclick="event.stopPropagation()" style="position: relative;">
+            <button onclick="prevImage()" style="
+              position: absolute;
+              left: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              font-size: 5rem;
+              background: none;
+              border: none;
+              color: white;
+              z-index: 1001;
+              cursor: pointer;
+          ">‹</button>
+            <img id="modalImageView" src="" alt="확대 이미지" style="
+              max-width: 90vw;
+              max-height: 80vh;
+              display: block;
+              margin: auto;
+              object-fit: contain;
+              border-radius: 10px;
+          ">
+            <button onclick="nextImage()" style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              font-size: 5rem;
+              background: none;
+              border: none;
+              color: white;
+              z-index: 1001;
+              cursor: pointer;
+          ">›</button>
+        </div>
+    </div>
+</div>
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 <script type="text/javascript" th:inline="javascript">
@@ -319,6 +368,8 @@
     var isLoading = false;
     var sortKeyword = "created";
     var sortDirection = "DESC";
+    let currentImageIndex = 0;
+    let currentImages = [];
 
     function openModal(id) {
         document.getElementById('postModal').classList.remove('hidden');
@@ -537,10 +588,12 @@
                     imageWrapper.className = "image-wrapper-multiple";
 
                     // 이미지 여러 개 슬라이드
-                    post.images.forEach(url => {
+                    post.images.forEach((url, i) => {
                         const img = document.createElement("img");
                         img.src = url;
                         img.className = "slide-image";
+                        img.setAttribute("data-index", i);
+                        img.setAttribute("onclick", "openImageViewModalFromElement(this)");
                         imageWrapper.appendChild(img);
                     });
 
@@ -570,12 +623,6 @@
 
                     listEl.appendChild(card);
 
-                    // 슬라이드 기능 추가
-                    if (post.images.length > 1) {
-                        requestAnimationFrame(() => {
-                            initSlider(imageWrapper, indicator);
-                        });
-                    }
                 });
 
                 isLastPage = data.data.last;
@@ -594,44 +641,44 @@
         observer.observe(sentinel);
     }*/
 
-    function initSlider(wrapper, indicator) {
-        let currentIndex = 0;
-        const images = wrapper.children;
-        const dots = indicator.children;
-        const total = images.length;
 
-        // 💡 wrapper 너비 설정
-        wrapper.style.width = `${total * 100}%`;
+    function openImageViewModalFromElement(imgElement) {
+        const card = imgElement.closest(".post-card");
+        const images = Array.from(card.querySelectorAll(".slide-image")).map(img => img.src);
+        const index = parseInt(imgElement.getAttribute("data-index")) || 0;
+        openImageViewModal(images, index);
+    }
 
-        let startX = 0;
-        let deltaX = 0;
+    function openImageViewModal(images, index) {
+        console.log("모달 열기 시도:", index, images);
+        currentImages = images;
+        currentImageIndex = index;
+        const modal = document.getElementById('imageViewModal');
+        modal.classList.remove('hidden');
+        updateImageView();
+    }
 
-        wrapper.addEventListener("touchstart", (e) => {
-            startX = e.touches[0].clientX;
-        });
+    function closeImageViewModal() {
+        document.getElementById('imageViewModal').classList.add('hidden');
+    }
 
-        wrapper.addEventListener("touchmove", (e) => {
-            deltaX = e.touches[0].clientX - startX;
-        });
+    function updateImageView() {
+        const img = document.getElementById('modalImageView');
+        img.src = currentImages[currentImageIndex];
+    }
 
-        wrapper.addEventListener("touchend", (e) => {
-            if (Math.abs(deltaX) > 30) {
-                if (deltaX < 0 && currentIndex < total - 1) currentIndex++;
-                else if (deltaX > 0 && currentIndex > 0) currentIndex--;
-            }
-            updateSlider();
-            deltaX = 0;
-        });
-
-        function updateSlider() {
-            console.log("updateSlider");
-            wrapper.style.transform = `translateX(-${(100 / total) * currentIndex}%)`;
-
-            Array.from(dots).forEach(dot => dot.classList.remove("active"));
-            if (dots[currentIndex]) dots[currentIndex].classList.add("active");
+    function prevImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            updateImageView();
         }
+    }
 
-        updateSlider(); // 초기 실행
+    function nextImage() {
+        if (currentImageIndex < currentImages.length - 1) {
+            currentImageIndex++;
+            updateImageView();
+        }
     }
 
     // 💡 아래에서 위로 스와이프 감지

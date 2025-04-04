@@ -33,8 +33,6 @@ public class PostRepositoryDsl {
     public Page<ViewResponseDto> getPostsOfPage(Pageable pageable, String sortKeyword, Order sortDirection) {
         // 정렬 조건 설정
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortKeyword, sortDirection);
-        System.out.println(sortKeyword);
-        System.out.println(sortDirection.name());
         StringTemplate imageUrls = Expressions.stringTemplate("group_concat(distinct {0})", postImage.imageUrl);
 
         List<Tuple> result = queryFactory
