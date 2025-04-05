@@ -605,7 +605,6 @@
 
                     card.innerHTML += `
                         <div style="display: flex; align-items: center;">
-                            <div class="post-caption-nickname" style="padding: 0.6rem 0rem 0rem 0.8rem;">@${post.nickname}</div>
                             <div class="post-meta">
                                 &nbsp;<img
                                 src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
@@ -613,6 +612,7 @@
                                 onclick="toggleLike(event, this, ${post.id})"
                             > ${post.likeCount}
                             </div>
+                            <div class="post-caption-nickname">@${post.nickname}</div>
                         </div>
                         <div class="post-meta" style="padding: 0.2rem 0.8rem 0rem 0.8rem; font-size: 10px; color: #888;">
                             ${createdText}
