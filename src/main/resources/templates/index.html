@@ -34,7 +34,7 @@
     <!-- ✅ 네비게이션 바 -->
     <div class="nav-wrapper">
         <nav class="nav">
-            <div class="nav-left"><img src="/image/logo.png" alt="logo"></div>
+            <div class="nav-left" onclick="location.href='/'"><img src="/image/logo.png" alt="logo"></div>
             <div class="nav-right">
                 <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
                 <button th:if="${user != null}" onclick="logout()">
