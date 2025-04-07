@@ -14,7 +14,23 @@ html, body {
 /* 다크 모드인 경우 자동 적용 */
 @media (prefers-color-scheme: dark) {
     body, .wrapper, .footer, .nav {
-        background: #121212 !important;
+        background: #323232 !important;
+        color: #eeeeee !important;
+    }
+
+    .wrapper::before {
+        background:
+                radial-gradient(circle at 30% 35%, rgba(120, 90, 255, 0.2), transparent 65%),
+                radial-gradient(circle at 70% 65%, rgba(255, 100, 200, 0.15), transparent 65%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05), transparent 70%) !important;
+        opacity: 0.3 !important;;
+        filter: blur(90px) !important;;
+    }
+
+    .header,
+    .nickname,
+    .message
+    {
         color: #eeeeee !important;
     }
     .nav img {
@@ -22,8 +38,9 @@ html, body {
     }
 
     .post-card {
-        background: #121212 !important;
+        background: #3c3c3c !important;
         color: #eeeeee !important;
+        border: 1px solid #3c3c3c !important;
     }
     .sort-filter {
         color: #eeeeee !important;
@@ -54,7 +71,6 @@ html, body {
     .read-more {
         color: #ccc !important;
     }
-
 
     /* 그 외 아이콘은 기본 유지 */
     .icon[src*="empty_heart.png"] {
@@ -172,10 +188,52 @@ body {
     display: block;
 }
 
+.main-container {
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto;
+}
+
 .header {
     text-align: center;
-    padding: 1.5rem 1rem;
+    padding: 1.2rem 1rem 0rem 1rem;
 }
+.profile-card {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: left;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eaeaea;
+}
+
+.profile-text {
+    text-align: left;
+}
+
+.profile-text .nickname {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+}
+
+.profile-text .message {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.upload-btn-wrapper {
+    margin-top: 0.5rem;
+}
+
 
 .upload-button {
     background: #0a0a0ac2;
@@ -301,7 +359,7 @@ body {
 .modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -675,7 +733,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin: 0 1rem 1rem;
+    margin: 0 1rem 0rem 1rem;
     font-size: 0.9rem;
     color: #555;
 }

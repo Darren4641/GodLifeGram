@@ -37,9 +37,6 @@
             <div class="nav-left" onclick="location.href='/'"><img src="/image/logo.png" alt="logo"></div>
             <div class="nav-right">
                 <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
-                <button th:if="${user != null}" onclick="logout()">
-                    로그아웃
-                </button>
 
                 <!-- 비로그인 상태: 로그인 버튼 -->
                 <button th:unless="${user != null}" onclick="showLogin()">
@@ -52,21 +49,35 @@
 
 
     <!-- ✅ 상단 메시지 + 버튼 -->
-    <div class="header">
-        <h2 th:if="${user != null}">📸 <span th:text="${user.nickname}">닉네임</span>님, 갓생을 인증해보세요!</h2>
-        <h2 th:unless="${user != null}">📸 갓생을 인증해보세요!</h2>
-        <button class="upload-button" onclick="checkLoginBeforeUpload()">갓생 등록하기</button>
+    <div class="main-container">
+        <div class="header" th:if="${user != null}">
+            <div class="profile-card" th:if="${user != null}">
+                <img class="profile-avatar" src="/icon/god.png" alt="프로필">
+                <div class="profile-text">
+                    <div class="nickname"><span th:text="${user.nickname}">닉네임</span>님,</div>
+                    <div class="message">오늘도 갓생 인증할 준비 되셨나요?</div>
+                </div>
+                <div class="upload-btn-wrapper">
+                    <button class="upload-button" onclick="checkLoginBeforeUpload()">갓생 등록</button>
+                </div>
+            </div>
+        </div>
+        <div class="header" th:unless="${user != null}">
+            <h2>📸 갓생을 인증해보세요!</h2>
+            <button class="upload-button" onclick="checkLoginBeforeUpload()">갓생 등록하기</button>
+        </div>
+
+        <!-- ✅ 정렬 필터링 -->
+        <div class="sort-filter">
+            <label for="sortSelect">정렬 기준:</label>
+            <select id="sortSelect" onchange="onSortChange()">
+                <option value="created,DESC">최신순</option>
+                <option value="like,DESC">좋아요</option>
+            </select>
+        </div>
+
     </div>
 
-    <!-- ✅ 정렬 필터링 -->
-    <!-- ✅ 정렬 필터링 -->
-    <div class="sort-filter">
-        <label for="sortSelect">정렬 기준:</label>
-        <select id="sortSelect" onchange="onSortChange()">
-            <option value="created,DESC">최신순</option>
-            <option value="like,DESC">좋아요</option>
-        </select>
-    </div>
 
     <!-- ✅ 피드 목록 -->
     <div class="post-list">
