@@ -796,7 +796,13 @@ body {
 
 /*댓글 기능*/
 
-
+.no-comment {
+    color: #9c9898;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .comment-form input,
 .comment-form button {

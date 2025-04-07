@@ -13,7 +13,9 @@ import com.godlife.godlifegram.post.application.service.PostService;
 import com.godlife.godlifegram.post.domain.*;
 import com.godlife.godlifegram.post.infrastructure.S3Service;
 import com.godlife.godlifegram.post.infrastructure.dto.UploadedFileInfoDto;
+import com.godlife.godlifegram.post.ui.dto.request.ViewCommentRequestDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
+import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.domain.user.UserRepository;
@@ -55,6 +57,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<ViewResponseDto> getPosts(ViewPostRequestDto viewPostRequestDto) {
         return postRepositoryDsl.getPostsOfPage(viewPostRequestDto.getPageable(), viewPostRequestDto.getSortKeyword(), viewPostRequestDto.getUuid(), viewPostRequestDto.getSortDirection());
+    }
+
+    @Override
+    public Page<ViewCommentResponseDto> getComments(ViewCommentRequestDto viewCommentRequestDto) {
+        return postRepositoryDsl.getCommentsOfPage(viewCommentRequestDto.getPageable(), viewCommentRequestDto.getPostId());
     }
 
     @Override

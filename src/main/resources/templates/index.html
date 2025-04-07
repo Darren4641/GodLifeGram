@@ -192,25 +192,6 @@
         <button class="close-btn" onclick="closeCommentModal()">✕</button>
     </div>
     <div class="comment-list" id="commentList">
-        <!-- 하드코딩된 댓글 예시 -->
-        <div class="comment-item">
-            <img src="/icon/god.png" alt="user" class="comment-avatar">
-            <div class="comment-body">
-                <div class="comment-text">
-                    <span class="nickname">갓생러1</span> 와 대박이에요! 응원합니다 🙌
-                </div>
-                <div class="comment-time">3분 전</div>
-            </div>
-        </div>
-        <div class="comment-item">
-            <img src="/icon/god.png" alt="user" class="comment-avatar">
-            <div class="comment-body">
-                <div class="comment-text">
-                    <span class="nickname">갓생러2</span> 오늘도 열심히 사시는군요 👏
-                </div>
-                <div class="comment-time">1시간 전</div>
-            </div>
-        </div>
     </div>
     <form class="comment-form" onsubmit="submitComment(event)">
         <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." required />
@@ -654,7 +635,7 @@
                                     class="icon"
                                     onclick="openCommentModal(${post.id})"
                                 >
-                                <span class="comment_count">0</span>
+                                <span class="comment_count">${post.commentCount}</span>
                                 <img
                                     src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
                                     class="icon"
@@ -813,20 +794,64 @@
         removeQueryParam("commentPostId");
     }
 
-    function loadComments(postId) {
+    let currentCommentPage = 0;
+    let isLastCommentPage = false;
 
-        /*fetch(`/post/${postId}/comments`)
+    function loadComments(postId, isInitial = true) {
+        const list = document.getElementById("commentList");
+
+        if (isInitial) {
+            list.innerHTML = ""; // 초기 로딩이면 비우기
+            currentCommentPage = 0;
+            isLastCommentPage = false;
+        }
+
+        fetch(`/post/comment?postId=${postId}&page=${currentCommentPage}&size=5`)
             .then(res => res.json())
             .then(data => {
-                const list = document.getElementById("commentList");
-                list.innerHTML = "";
-                data.forEach(comment => {
+                const comments = data.data.content;
+
+                if(comments.length === 0) {
+                    const span = document.createElement("span");
+                    span.textContent = "아직 댓글이 없습니다."
+                    span.className = "no-comment"
+                    list.appendChild(span);
+                }
+                comments.forEach(comment => {
                     const div = document.createElement("div");
                     div.className = "comment-item";
-                    div.textContent = `${comment.nickname}: ${comment.content}`;
+                    div.innerHTML = `
+                    <img src="/icon/god.png" alt="user" class="comment-avatar">
+                    <div class="comment-body">
+                        <div class="comment-text">
+                            <span class="nickname">${comment.nickname}</span> ${comment.content}
+                        </div>
+                        <div class="comment-time">${getRelativeTime(comment.createdDate)}</div>
+                    </div>
+                `;
                     list.appendChild(div);
                 });
-            });*/
+
+                currentCommentPage++;
+                isLastCommentPage = data.data.last;
+
+                const existingMoreBtn = document.getElementById("loadMoreCommentBtn");
+                if (!isLastCommentPage) {
+                    if (!existingMoreBtn) {
+                        const moreBtn = document.createElement("button");
+                        moreBtn.id = "loadMoreCommentBtn";
+                        moreBtn.textContent = "더보기";
+                        moreBtn.style.cssText = "margin: 10px auto; display: block; font-size: 0.9rem;";
+                        moreBtn.onclick = () => loadComments(postId, false);
+                        list.appendChild(moreBtn);
+                    }
+                } else if (existingMoreBtn) {
+                    existingMoreBtn.remove(); // 마지막 페이지면 버튼 제거
+                }
+            })
+            .catch(err => {
+                alert("댓글 불러오기 실패: " + err.message);
+            });
     }
 
     function submitComment(event) {

@@ -1,5 +1,6 @@
 package com.godlife.godlifegram.post.domain;
 
+import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.godlife.godlifegram.post.domain.QPost.post;
+import static com.godlife.godlifegram.post.domain.QPostComment.postComment;
 import static com.godlife.godlifegram.post.domain.QPostImage.postImage;
 import static com.godlife.godlifegram.post.domain.QPostLike.postLike;
 import static com.godlife.godlifegram.user.domain.user.QUser.user;
@@ -54,6 +56,7 @@ public class PostRepositoryDsl {
                         post.id,
                         post.content,
                         postLike.id.countDistinct(),
+                        postComment.id.countDistinct(),
                         user.nickname,
                         imageUrls,
                         isLiked,
@@ -63,6 +66,7 @@ public class PostRepositoryDsl {
                 .join(post.user, user)
                 .leftJoin(postLike).on(postLike.post.id.eq(post.id))
                 .leftJoin(postImage).on(postImage.post.id.eq(post.id))
+                .leftJoin(postComment).on(postComment.post.id.eq(post.id))
                 .groupBy(post.id)
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
@@ -87,6 +91,7 @@ public class PostRepositoryDsl {
             return new ViewResponseDto(
                     it.get(post.id),
                     it.get(post.content),
+                    it.get(postComment.id.countDistinct()),
                     it.get(postLike.id.countDistinct()),
                     10L,
                     it.get(user.nickname),
@@ -96,6 +101,45 @@ public class PostRepositoryDsl {
             );
         })
         .collect(Collectors.toList());
+
+        return new PageImpl<>(content, pageable, count);
+    }
+
+
+    public Page<ViewCommentResponseDto> getCommentsOfPage(Pageable pageable, Long postId) {
+        List<Tuple> result = queryFactory
+                .select(
+                        postComment.id,
+                        postComment.content,
+                        user.id,
+                        user.nickname,
+                        postComment.createdDate
+                )
+                .from(postComment)
+                .join(postComment.user, user)
+                .where(postComment.post.id.eq(postId))
+                .orderBy(postComment.createdDate.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long count = Optional.ofNullable(queryFactory
+                .select(postComment.id.count())
+                .from(postComment)
+                .where(postComment.post.id.eq(postId))
+                .fetchOne()).orElse(0L);
+
+        List<ViewCommentResponseDto> content = result.stream().map(it -> {
+
+                    return new ViewCommentResponseDto(
+                            it.get(postComment.id),
+                            it.get(postComment.content),
+                            it.get(user.id),
+                            it.get(user.nickname),
+                            it.get(postComment.createdDate)
+                    );
+                })
+                .collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, count);
     }

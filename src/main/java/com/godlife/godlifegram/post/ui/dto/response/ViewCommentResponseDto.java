@@ -11,15 +11,11 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ViewResponseDto {
-    private Long id;
+public class ViewCommentResponseDto {
+    private Long commentId;
     private String content;
-    private Long commentCount;
-    private Long likeCount;
-    private Long likeGoal;
+    private Long userId;
     private String nickname;
-    private List<String> images;
-    private Boolean isLiked;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdDate;
 }

@@ -15,11 +15,9 @@ import com.godlife.godlifegram.post.application.service.PostService;
 import com.godlife.godlifegram.post.infrastructure.S3Service;
 import com.godlife.godlifegram.post.infrastructure.dto.ImageDto;
 import com.godlife.godlifegram.post.ui.dto.request.LikePostRequestDto;
+import com.godlife.godlifegram.post.ui.dto.request.ViewCommentRequestDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
-import com.godlife.godlifegram.post.ui.dto.response.LikePostResponseDto;
-import com.godlife.godlifegram.post.ui.dto.response.UploadResponseDto;
-import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
-import com.godlife.godlifegram.post.ui.dto.response.WriteCommentResponseDto;
+import com.godlife.godlifegram.post.ui.dto.response.*;
 import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +80,11 @@ public class PostController {
         WriteCommentResponseSvcDto serviceResDto = postService.saveComment(serviceReqDto);
 
         return new BaseResponse<>(postConverter.toWriteCommentResponseDto(serviceResDto));
+    }
+
+    @GetMapping("/comment")
+    public BaseResponse<Page<ViewCommentResponseDto>> viewComments(@Valid @ModelAttribute ViewCommentRequestDto viewPostRequestDto) {
+        return new BaseResponse<>(postService.getComments(viewPostRequestDto));
     }
 
 
