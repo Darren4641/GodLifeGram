@@ -18,6 +18,20 @@ html, body {
         color: #eeeeee !important;
     }
 
+    .upload-modal,
+    .comment-modal
+    {
+        background: white !important;
+        color: black !important;
+    }
+
+    .comment-text span {
+        color: black !important;
+    }
+
+    textarea {
+        background: white !important;
+    }
     .wrapper::before {
         background:
                 radial-gradient(circle at 30% 35%, rgba(120, 90, 255, 0.2), transparent 65%),
@@ -524,9 +538,15 @@ body {
     z-index: -1;
     /*pointer-events: none;*/
 }
+#scroll-sentinel {
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
 
 /* form */
-.upload-modal {
+.upload-modal,
+.comment-modal{
     position: fixed;
     bottom: -100%;
     left: 0;
@@ -544,7 +564,8 @@ body {
     box-sizing: border-box;
 }
 
-.upload-modal.show {
+.upload-modal.show,
+#commentModal.show {
     bottom: 0;
 }
 
@@ -556,7 +577,8 @@ body {
     margin: 0 auto 1rem;
 }
 
-.upload-header {
+.upload-header,
+.comment-header{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -769,4 +791,95 @@ body {
     margin: auto;
     object-fit: contain;
     border-radius: 10px;
+}
+
+/*댓글 기능*/
+
+
+
+.comment-form input,
+.comment-form button {
+    position: relative;
+    z-index: 10;
+}
+
+
+.comment-form {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    display: flex;
+    gap: 8px;
+    padding: 0.7rem 1rem;
+    border-top: 1px solid #eee;
+    z-index: 1002;
+    box-sizing: border-box;
+    transition: transform 0.3s ease;
+    transform: translateY(100%);
+}
+.comment-form input {
+    flex: 1;
+    padding: 0.6rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+}
+
+.comment-form button {
+    background: #0a0a0ac2;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.comment-form button:hover {
+    background: #000000d9;
+}
+
+.comment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.comment-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eaeaea;
+}
+
+.comment-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-text {
+    font-size: 14px;
+    color: #333;
+}
+
+.comment-text .nickname {
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+.comment-time {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+}
+#commentModal.show .comment-form {
+    transform: translateY(0);
 }

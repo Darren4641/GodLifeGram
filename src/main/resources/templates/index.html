@@ -69,7 +69,7 @@
 
         <!-- ✅ 정렬 필터링 -->
         <div class="sort-filter">
-            <label for="sortSelect">정렬 기준:</label>
+            <label for="sortSelect"></label>
             <select id="sortSelect" onchange="onSortChange()">
                 <option value="created,DESC">최신순</option>
                 <option value="like,DESC">좋아요</option>
@@ -81,31 +81,8 @@
 
     <!-- ✅ 피드 목록 -->
     <div class="post-list">
-        <!--<div class="post-card" onclick="openModal('dummy1')">
-            <div class="image-wrapper">
-                <img src="/post/image/20250403/5/81eed0cb-6f2d-441e-bb09-93e10dc704d1.png" class="post-image" alt="갓생 이미지">
-                <img src="/icon/success.png" alt="갓생성공" class="badge">
-            </div>
-            <div class="post-meta">
-                <img src="/icon/visibility.png" alt="조회수" class="icon"> 123 &nbsp;
-                <img src="/icon/heart.png" alt="좋아요" class="icon" onclick="toggleLike(event, this)"> 42
-            </div>
-            <div class="post-caption">✏️ 오늘 새벽 기상 성공!</div>
-        </div>
-        <div class="post-card" onclick="openModal('dummy1')">
-            <div class="image-wrapper">
-                <img src="/post/image/20250403/5/81eed0cb-6f2d-441e-bb09-93e10dc704d1.png" class="post-image" alt="갓생 이미지">
-                <img src="/icon/success.png" alt="갓생성공" class="badge">
-            </div>
-            <div class="post-meta">
-                <img src="/icon/visibility.png" alt="조회수" class="icon"> 123 &nbsp;
-                <img src="/icon/empty_heart.png" alt="좋아요" class="icon" onclick="toggleLike(event, this)"> 42
-            </div>
-            <div class="post-caption">✏️ 오늘 새벽 기상 성공!</div>
-        </div>-->
-
-        <!-- 더미 반복... -->
     </div>
+    <div id="scroll-sentinel" style="height: 1px;"></div>
 
     <!-- ✅ 갓생 상세 모달 -->
     <div id="postModal" class="modal hidden">
@@ -205,6 +182,39 @@
         </div>
 
         <button type="submit" class="upload-submit">업로드</button>
+    </form>
+</div>
+<!-- ✅ 댓글 모달 -->
+<div id="commentModal" class="comment-modal hidden">
+    <div class="upload-handle"></div>
+    <div class="comment-header">
+        <span>댓글</span>
+        <button class="close-btn" onclick="closeCommentModal()">✕</button>
+    </div>
+    <div class="comment-list" id="commentList">
+        <!-- 하드코딩된 댓글 예시 -->
+        <div class="comment-item">
+            <img src="/icon/god.png" alt="user" class="comment-avatar">
+            <div class="comment-body">
+                <div class="comment-text">
+                    <span class="nickname">갓생러1</span> 와 대박이에요! 응원합니다 🙌
+                </div>
+                <div class="comment-time">3분 전</div>
+            </div>
+        </div>
+        <div class="comment-item">
+            <img src="/icon/god.png" alt="user" class="comment-avatar">
+            <div class="comment-body">
+                <div class="comment-text">
+                    <span class="nickname">갓생러2</span> 오늘도 열심히 사시는군요 👏
+                </div>
+                <div class="comment-time">1시간 전</div>
+            </div>
+        </div>
+    </div>
+    <form class="comment-form" onsubmit="submitComment(event)">
+        <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." required />
+        <button type="submit">등록</button>
     </form>
 </div>
 <div id="imageViewModal" class="modal hidden" onclick="closeImageViewModal()">
@@ -626,6 +636,13 @@
                             <div class="post-caption-nickname">@${post.nickname}</div>
                             <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
                                 <img
+                                    src="/icon/comment.png"
+                                    class="icon"
+                                    style="filter: invert(1);"
+                                    onclick="openCommentModal(${post.id})"
+                                >
+                                <span class="comment_count">0</span>
+                                <img
                                     src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
                                     class="icon"
                                     onclick="toggleLike(event, this, ${post.id})"
@@ -657,6 +674,11 @@
                             readMoreEl.style.display = 'inline';
                         }
                     });
+
+                    const sentinel = document.getElementById("scroll-sentinel");
+                    if (sentinel) {
+                        listEl.appendChild(sentinel); // 항상 리스트 마지막에 위치
+                    }
                 });
 
                 isLastPage = data.data.last;
@@ -665,15 +687,21 @@
             .finally(() => isLoading = false);
     }
 
-    /*function observeScroll() {
+    function observeScroll() {
         const sentinel = document.getElementById("scroll-sentinel");
+        if (!sentinel) return;
+
         const observer = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting) {
                 loadPosts();
             }
-        }, { threshold: 1.0 });
+        }, {
+            rootMargin: "100px", // 조금 일찍 로드
+            threshold: 1.0
+        });
+
         observer.observe(sentinel);
-    }*/
+    }
 
 
     function openImageViewModalFromElement(imgElement) {
@@ -756,6 +784,61 @@
         });
     }
 
+    function openCommentModal(postId) {
+        const modal = document.getElementById("commentModal");
+        modal.classList.add("show");
+        modal.classList.remove("hidden");
+        modal.dataset.postId = postId;
+        loadComments(postId);
+    }
+
+    function closeCommentModal() {
+        const modal = document.getElementById("commentModal");
+        modal.classList.remove("show");
+        setTimeout(() => modal.classList.add("hidden"), 300);
+        document.getElementById("commentList").innerHTML = "";
+    }
+
+    function loadComments(postId) {
+
+        /*fetch(`/post/${postId}/comments`)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("commentList");
+                list.innerHTML = "";
+                data.forEach(comment => {
+                    const div = document.createElement("div");
+                    div.className = "comment-item";
+                    div.textContent = `${comment.nickname}: ${comment.content}`;
+                    list.appendChild(div);
+                });
+            });*/
+    }
+
+    function submitComment(event) {
+        event.preventDefault();
+        const modal = document.getElementById("commentModal");
+        const postId = modal.dataset.postId;
+        const input = document.getElementById("commentInput");
+        const content = input.value.trim();
+        if (!content) return;
+
+        fetch(`/post/${postId}/comments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("댓글 등록 실패");
+                return res.json();
+            })
+            .then(() => {
+                input.value = "";
+                loadComments(postId);
+            })
+            .catch(err => alert(err.message));
+    }
+
     function registerUUID() {
         if (!localStorage.getItem('godlife_uuid')) {
             localStorage.setItem('godlife_uuid', 'uuid_' + crypto.randomUUID());
@@ -782,6 +865,33 @@
         }
     });
 
+    (function handleKeyboardAdjustForCommentForm() {
+        const commentForm = document.querySelector(".comment-form");
+        let originalStyle = "";
+
+        if (!commentForm) return;
+
+        window.addEventListener("resize", () => {
+            const currentHeight = window.innerHeight;
+            const baseHeight = document.documentElement.clientHeight;
+
+            const isKeyboardOpen = currentHeight < baseHeight;
+
+            if (isKeyboardOpen) {
+                // 키보드 올라온 상태: 하단 고정 유지
+                commentForm.style.position = "fixed";
+                commentForm.style.bottom = "0";
+                commentForm.style.left = "0";
+                commentForm.style.width = "100%";
+                commentForm.style.zIndex = "1002";
+            } else {
+                // 키보드 내려간 상태: 스타일 복구
+                commentForm.removeAttribute("style");
+                commentForm.classList.add("comment-form"); // 기본 스타일 재적용
+            }
+        });
+    })();
+
     window.addEventListener("DOMContentLoaded", () => {
         const nav = document.querySelector(".nav");
         const navWrapper = document.querySelector(".nav-wrapper");
@@ -803,7 +913,7 @@
         loadPosts(true);
 
 
-        //observeScroll();
+        observeScroll();
     });
 </script>
 </html>
