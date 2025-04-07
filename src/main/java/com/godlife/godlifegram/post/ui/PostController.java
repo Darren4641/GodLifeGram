@@ -7,8 +7,10 @@ import com.godlife.godlifegram.common.response.enums.ResultCode;
 import com.godlife.godlifegram.post.application.converter.PostConverter;
 import com.godlife.godlifegram.post.application.dto.request.LikeRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.UploadRequestSvcDto;
+import com.godlife.godlifegram.post.application.dto.request.WriteCommentRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.LikeResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.UploadResponseSvcDto;
+import com.godlife.godlifegram.post.application.dto.response.WriteCommentResponseSvcDto;
 import com.godlife.godlifegram.post.application.service.PostService;
 import com.godlife.godlifegram.post.infrastructure.S3Service;
 import com.godlife.godlifegram.post.infrastructure.dto.ImageDto;
@@ -17,6 +19,7 @@ import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
 import com.godlife.godlifegram.post.ui.dto.response.LikePostResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.UploadResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
+import com.godlife.godlifegram.post.ui.dto.response.WriteCommentResponseDto;
 import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +70,18 @@ public class PostController {
         LikeResponseSvcDto serviceResDto = postService.likeOrCancel(serviceReqDto);
 
         return new BaseResponse<>(postConverter.toLikeSvcResponseDto(serviceResDto));
+    }
+
+    @PostMapping("/comment")
+    public BaseResponse<WriteCommentResponseDto> writeComment(@RequestParam("postId") Long postId,
+                                                              @RequestParam("content") String content,
+                                                              @SessionAttribute("user") SigninResponseSvcDto user) {
+
+        WriteCommentRequestSvcDto serviceReqDto = new WriteCommentRequestSvcDto(postId, content, user);
+
+        WriteCommentResponseSvcDto serviceResDto = postService.saveComment(serviceReqDto);
+
+        return new BaseResponse<>(postConverter.toWriteCommentResponseDto(serviceResDto));
     }
 
 

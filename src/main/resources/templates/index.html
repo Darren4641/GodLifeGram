@@ -290,6 +290,7 @@
 </body>
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
+    var pendingCommentPostId = null;
     let imageList = [];
     let currentPage = 0;
     var isLastPage = false;
@@ -314,7 +315,17 @@
         }
     }
 
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+    function removeQueryParam(param) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(param);
 
+        // URL만 바꿔줌 (리로드 없이!)
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+    }
 
     function closeAuthModal() {
         document.getElementById('authModal').classList.add('hidden');
@@ -344,8 +355,11 @@
                     return;
                 }
 
-                closeAuthModal();
-                location.reload();
+                if (pendingCommentPostId) {
+                    location.href = `/?commentPostId=${pendingCommentPostId}`;
+                } else {
+                    location.reload();
+                }
             })
             .catch(err => {
                 errorDiv.textContent = err.message || "로그인 중 오류 발생";
@@ -638,7 +652,6 @@
                                 <img
                                     src="/icon/comment.png"
                                     class="icon"
-                                    style="filter: invert(1);"
                                     onclick="openCommentModal(${post.id})"
                                 >
                                 <span class="comment_count">0</span>
@@ -797,6 +810,7 @@
         modal.classList.remove("show");
         setTimeout(() => modal.classList.add("hidden"), 300);
         document.getElementById("commentList").innerHTML = "";
+        removeQueryParam("commentPostId");
     }
 
     function loadComments(postId) {
@@ -823,10 +837,19 @@
         const content = input.value.trim();
         if (!content) return;
 
-        fetch(`/post/${postId}/comments`, {
+        if (!user) {
+            pendingCommentPostId = postId;
+            showLogin(); // 로그인 모달 띄우기
+            closeCommentModal();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("postId", postId);
+        formData.append("content", content);
+        fetch(`/post/comment`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content })
+            body: formData
         })
             .then(res => {
                 if (!res.ok) throw new Error("댓글 등록 실패");
@@ -835,6 +858,7 @@
             .then(() => {
                 input.value = "";
                 loadComments(postId);
+                alert("등록되었습니다.");
             })
             .catch(err => alert(err.message));
     }
@@ -914,6 +938,13 @@
 
 
         observeScroll();
+
+        const commentPostId = getQueryParam("commentPostId");
+        if (commentPostId) {
+            setTimeout(() => {
+                openCommentModal(commentPostId);
+            }, 300);
+        }
     });
 </script>
 </html>

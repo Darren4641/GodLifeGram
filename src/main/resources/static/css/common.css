@@ -87,7 +87,8 @@ html, body {
     }
 
     /* 그 외 아이콘은 기본 유지 */
-    .icon[src*="empty_heart.png"] {
+    .icon[src*="empty_heart.png"],
+    .icon[src*="comment.png"]{
         filter: invert(1) !important;
     }
 

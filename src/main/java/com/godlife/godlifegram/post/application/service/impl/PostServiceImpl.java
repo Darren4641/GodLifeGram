@@ -5,8 +5,10 @@ import com.godlife.godlifegram.common.response.enums.ResultCode;
 import com.godlife.godlifegram.post.application.converter.PostConverter;
 import com.godlife.godlifegram.post.application.dto.request.LikeRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.UploadRequestSvcDto;
+import com.godlife.godlifegram.post.application.dto.request.WriteCommentRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.LikeResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.UploadResponseSvcDto;
+import com.godlife.godlifegram.post.application.dto.response.WriteCommentResponseSvcDto;
 import com.godlife.godlifegram.post.application.service.PostService;
 import com.godlife.godlifegram.post.domain.*;
 import com.godlife.godlifegram.post.infrastructure.S3Service;
@@ -22,11 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService  {
+public class PostServiceImpl implements PostService {
     private final S3Service s3Service;
     private final PostConverter postConverter;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostCommentRepository postCommentRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostRepositoryDsl postRepositoryDsl;
     private final PostImageRepository postImageRepository;
@@ -77,5 +80,24 @@ public class PostServiceImpl implements PostService  {
                 likeRequestSvcDto.getUuid(),
                 likeRequestSvcDto.getIsLiked()
         );
+    }
+
+    @Override
+    public WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto) {
+        User user = userRepository.findByEmail(writeCommentRequestSvcDto.getUser().getEmail())
+                .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
+
+        Post post = postRepository.findById(writeCommentRequestSvcDto.getPostId())
+                .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        PostComment newComment = PostComment.writeComment(
+                writeCommentRequestSvcDto.getContent(),
+                user,
+                post
+                );
+
+        postCommentRepository.save(newComment);
+
+        return postConverter.toWriteCommentSvcResponseDto(newComment);
     }
 }
