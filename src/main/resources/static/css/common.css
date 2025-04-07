@@ -13,9 +13,12 @@ html, body {
 
 /* 다크 모드인 경우 자동 적용 */
 @media (prefers-color-scheme: dark) {
-    body, .wrapper, .footer{
+    body, .wrapper, .footer, .nav {
         background: #121212 !important;
         color: #eeeeee !important;
+    }
+    .nav img {
+        filter: invert(1);
     }
 
     .post-card {
@@ -143,7 +146,7 @@ body {
     cursor: pointer;
 }
 .nav-left img {
-    max-width: 70px;
+    max-width: 60px;
 }
 
 .nav-wrapper {
@@ -173,6 +176,7 @@ body {
     text-align: center;
     padding: 1.5rem 1rem;
 }
+
 .upload-button {
     background: #0a0a0ac2;
     color: white;
@@ -220,7 +224,7 @@ body {
 
 
 .post-caption-nickname {
-    padding: 0.6rem 0.5rem 0rem 0rem;
+    padding: 0.6rem 0.5rem 0rem 0.8rem;
     font-size: 0.9rem; /* 살짝 줄임 */
     color: #333;
     font-weight: bold;
@@ -264,6 +268,36 @@ body {
     font-size: 0.8rem;
 }
 
+.like-progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #888;
+    padding: 0.4rem 0.8rem;
+    font-weight: 500;
+}
+
+.like-progress img.icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.like-progress img.icon:active {
+    transform: scale(1.2);
+}
+
+.like-count {
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.like-progress.completed {
+    color: #e91e63 !important;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
 .modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -287,20 +321,23 @@ body {
     margin: 0.5rem 0;
     padding: 0.5rem;
 }
-#authModal .modal-content, #signupModal .modal-content{
+#authModal .modal-content,
+#signupModal .modal-content{
     padding: 2rem;
     margin: 1rem;
     text-align: center;
     position: relative;
 }
 
-#authModal h3, #signupModal h3{
+#authModal h3,
+#signupModal h3{
     font-size: 1.2rem;
     margin-bottom: 1rem;
     color: #333;
 }
 
-#authModal input, #signupModal input {
+#authModal input,
+#signupModal input {
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;

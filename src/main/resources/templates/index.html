@@ -411,11 +411,17 @@
         const isLiked = icon.getAttribute("src").includes("empty_heart");
         icon.setAttribute("src", isLiked ? "/icon/heart.png" : "/icon/empty_heart.png");
 
-        // 숫자 업데이트 (임시, 실제 서버 반영은 별도)
-        const countNode = icon.nextSibling;
-        if (countNode && countNode.nodeType === 3) {
-            let count = parseInt(countNode.textContent.trim());
-            countNode.textContent = isLiked ? ` ${count + 1}` : ` ${count - 1}`;
+        const countSpan = icon.nextElementSibling;
+        if (countSpan && countSpan.classList.contains("like-count")) {
+            const [current, total] = countSpan.textContent.trim().split("/").map(s => parseInt(s));
+            const newCount = isLiked ? current + 1 : current - 1;
+            countSpan.textContent = `${newCount} / ${total}`;
+
+            if (newCount >= total) {
+                countSpan.parentElement.classList.add("completed");
+            } else {
+                countSpan.parentElement.classList.remove("completed");
+            }
         }
 
         const uuid = registerUUID();
@@ -602,17 +608,19 @@
                     card.appendChild(imageSlider);
 
                     const createdText = getRelativeTime(post.createdDate);
+                    const isCompleted = post.likeCount >= post.likeGoal;
 
                     card.innerHTML += `
-                        <div style="display: flex; align-items: center;">
-                            <div class="post-meta">
-                                &nbsp;<img
-                                src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
-                                class="icon"
-                                onclick="toggleLike(event, this, ${post.id})"
-                            > ${post.likeCount}
-                            </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between">
                             <div class="post-caption-nickname">@${post.nickname}</div>
+                            <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
+                                <img
+                                    src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
+                                    class="icon"
+                                    onclick="toggleLike(event, this, ${post.id})"
+                                >
+                                <span class="like-count">${post.likeCount} / ${post.likeGoal}</span>
+                            </div>
                         </div>
                         <div class="post-meta" style="padding: 0.2rem 0.8rem 0rem 0.8rem; font-size: 10px; color: #888;">
                             ${createdText}

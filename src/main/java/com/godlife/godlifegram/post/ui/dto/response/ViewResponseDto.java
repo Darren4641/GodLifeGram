@@ -15,6 +15,7 @@ public class ViewResponseDto {
     private Long id;
     private String content;
     private Long likeCount;
+    private Long likeGoal;
     private String nickname;
     private List<String> images;
     private Boolean isLiked;

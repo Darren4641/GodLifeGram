@@ -88,6 +88,7 @@ public class PostRepositoryDsl {
                     it.get(post.id),
                     it.get(post.content),
                     it.get(postLike.id.countDistinct()),
+                    10L,
                     it.get(user.nickname),
                     images,
                     it.get(isLiked) != null && it.get(isLiked) == 1,
