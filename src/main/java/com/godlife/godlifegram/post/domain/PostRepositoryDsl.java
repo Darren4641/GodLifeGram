@@ -3,10 +3,7 @@ package com.godlife.godlifegram.post.domain;
 import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -103,6 +100,44 @@ public class PostRepositoryDsl {
         .collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, count);
+    }
+
+    public Optional<ViewResponseDto.ViewDetailResponseDto> getPost(Long id, String uuid) {
+        StringTemplate imageUrls = Expressions.stringTemplate("group_concat(distinct {0})", postImage.imageUrl);
+
+        Expression<Boolean> isLiked = ExpressionUtils.as(
+                new CaseBuilder()
+                        .when(postLike.uuid.eq(uuid)).then(true)
+                        .otherwise(false)
+                        .max(),
+                "isLiked"
+        );
+
+        ViewResponseDto.ViewDetailResponseDto dto = queryFactory
+                .select(
+                        Projections.constructor(
+                                ViewResponseDto.ViewDetailResponseDto.class,
+                                post.id,
+                                post.content,
+                                postComment.id.countDistinct(),
+                                postLike.id.countDistinct(),
+                                Expressions.constant(0L),
+                                user.nickname,
+                                imageUrls,
+                                isLiked,
+                                post.createdDate
+                        )
+                )
+                .from(post)
+                .join(post.user, user)
+                .leftJoin(postLike).on(postLike.post.id.eq(post.id))
+                .leftJoin(postImage).on(postImage.post.id.eq(post.id))
+                .leftJoin(postComment).on(postComment.post.id.eq(post.id))
+                .where(post.id.eq(id))
+                .limit(1)
+                .fetchFirst();
+
+        return (dto == null || dto.getId() == null) ? Optional.empty() : Optional.of(dto);
     }
 
 

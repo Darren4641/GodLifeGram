@@ -19,6 +19,7 @@ import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.domain.user.UserRepository;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,14 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<ViewResponseDto> getPosts(ViewPostRequestDto viewPostRequestDto) {
         return postRepositoryDsl.getPostsOfPage(viewPostRequestDto.getPageable(), viewPostRequestDto.getSortKeyword(), viewPostRequestDto.getUuid(), viewPostRequestDto.getSortDirection());
+    }
+
+    @Override
+    public ViewResponseDto getPost(Long id, String uuid) {
+        ViewResponseDto.ViewDetailResponseDto viewDetailResponseDto = postRepositoryDsl.getPost(id, uuid)
+                .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        return viewDetailResponseDto.toViewResponseDto();
     }
 
     @Override

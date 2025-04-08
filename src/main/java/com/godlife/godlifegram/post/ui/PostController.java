@@ -15,6 +15,7 @@ import com.godlife.godlifegram.post.application.service.PostService;
 import com.godlife.godlifegram.post.infrastructure.S3Service;
 import com.godlife.godlifegram.post.infrastructure.dto.ImageDto;
 import com.godlife.godlifegram.post.ui.dto.request.LikePostRequestDto;
+import com.godlife.godlifegram.post.ui.dto.request.UuidRequestDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewCommentRequestDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
 import com.godlife.godlifegram.post.ui.dto.response.*;
@@ -41,7 +42,6 @@ public class PostController {
     public BaseResponse<UploadResponseDto> uploadPost(@RequestParam("content") String content,
                                                       @RequestParam("images") List<MultipartFile> images,
                                                       @SessionAttribute("user") SigninResponseSvcDto user) {
-        System.out.println(images.get(0).getName());
         if(images.size() > 5) {
             throw new ApiErrorException(ResultCode.FILE_SIZE_OVER_FIVE);
         }
@@ -56,6 +56,12 @@ public class PostController {
     @GetMapping
     public BaseResponse<Page<ViewResponseDto>> viewPosts(@Valid @ModelAttribute ViewPostRequestDto viewPostRequestDto) {
         return new BaseResponse<>(postService.getPosts(viewPostRequestDto));
+    }
+
+    @PostMapping("/detail/{id}")
+    public BaseResponse<ViewResponseDto> viewPost(@PathVariable(name = "id") Long id,
+                                                  @RequestBody UuidRequestDto uuidRequestDto) {
+        return new BaseResponse<>(postService.getPost(id, uuidRequestDto.getUuid()));
     }
 
     @PostMapping("/like")

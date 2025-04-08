@@ -15,6 +15,13 @@ public class ViewController {
         return "index";
     }
 
+    @GetMapping("/post-detail")
+    public String detail(HttpSession session, Model model) {
+        Object user = session.getAttribute("user");
+        model.addAttribute("user", user);
+        return "post-detail";
+    }
+
     @GetMapping("/signup")
     public String signup() {
         return "signup";

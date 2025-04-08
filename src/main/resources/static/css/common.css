@@ -32,6 +32,7 @@ html, body {
     textarea {
         background: white !important;
     }
+
     .wrapper::before {
         background:
                 radial-gradient(circle at 30% 35%, rgba(120, 90, 255, 0.2), transparent 65%),
@@ -112,7 +113,7 @@ html, body {
 
     .upload-form textarea {
         background-color: #333;
-        color: white;
+        color: black;
         border: 1px solid #444;
     }
 

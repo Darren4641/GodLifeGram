@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="57x57" th:href="@{/favicon/apple-icon-57x57.png}">
+    <link rel="apple-touch-icon" sizes="60x60" th:href="@{/favicon/apple-icon-60x60.png}">
+    <link rel="apple-touch-icon" sizes="72x72" th:href="@{/favicon/apple-icon-72x72.png}">
+    <link rel="apple-touch-icon" sizes="76x76" th:href="@{/favicon/apple-icon-76x76.png}">
+    <link rel="apple-touch-icon" sizes="114x114" th:href="@{/favicon/apple-icon-114x114.png}">
+    <link rel="apple-touch-icon" sizes="120x120" th:href="@{/favicon/apple-icon-120x120.png}">
+    <link rel="apple-touch-icon" sizes="144x144" th:href="@{/favicon/apple-icon-144x144.png}">
+    <link rel="apple-touch-icon" sizes="152x152" th:href="@{/favicon/apple-icon-152x152.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/apple-icon-180x180.png}">
+    <link rel="icon" type="image/png" sizes="192x192"  th:href="@{/favicon/android-icon-192x192.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
+    <link rel="stylesheet" href="/css/common.css?v=1" th:href="@{/css/common.css}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <title>#갓생그램</title>
+    <style>
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- 네비게이션, 헤더, 포스트 목록 등 전체 내용 -->
+    <!-- ✅ 네비게이션 바 -->
+    <div class="nav-wrapper">
+        <nav class="nav">
+            <div class="nav-left" onclick="location.href='/'"><img src="/image/logo.png" alt="logo"></div>
+            <div class="nav-right">
+                <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
+
+                <!-- 비로그인 상태: 로그인 버튼 -->
+                <button th:unless="${user != null}" onclick="showLogin()">
+                    로그인
+                </button>
+            </div>
+        </nav>
+        <div class="nav-placeholder"></div>
+    </div>
+
+    <div class="post-list">
+    </div>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var user = /*[[ ${user} ]]*/;
+
+    function registerUUID() {
+        if (!localStorage.getItem('godlife_uuid')) {
+            localStorage.setItem('godlife_uuid', 'uuid_' + generateUUID());
+        }
+        return localStorage.getItem('godlife_uuid');
+    }
+
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+
+
+    function loadPosts() {
+        const uuid = registerUUID();
+        const id = getQueryParam("id");
+        fetch(`/post/detail/${id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                uuid: uuid
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                const post = data.data;
+                const listEl = document.querySelector(".post-list");
+
+                const card = document.createElement("div");
+                card.className = "post-card";
+
+                const imageSlider = document.createElement("div");
+                imageSlider.className = "image-slider";
+
+                const imageWrapper = document.createElement("div");
+                imageWrapper.className = "image-wrapper-multiple";
+
+                // 이미지 여러 개 슬라이드
+                post.images.forEach((url, i) => {
+                    const img = document.createElement("img");
+                    img.src = url;
+                    img.className = "slide-image";
+                    img.setAttribute("data-index", i);
+                    img.setAttribute("onclick", "openImageViewModalFromElement(this)");
+                    imageWrapper.appendChild(img);
+                });
+
+                // 슬라이더에 이미지 래퍼 추가
+                imageSlider.appendChild(imageWrapper);
+
+                // 인디케이터 (● ● ●)
+                const indicator = document.createElement("div");
+                indicator.className = "image-indicator";
+                post.images.forEach((_, index) => {
+                    const dot = document.createElement("span");
+                    dot.className = "dot" + (index === 0 ? " active" : "");
+                    indicator.appendChild(dot);
+                });
+
+                imageSlider.appendChild(indicator);
+
+                card.appendChild(imageSlider);
+
+                const createdText = getRelativeTime(post.createdDate);
+                const isCompleted = post.likeCount >= post.likeGoal;
+
+                card.innerHTML += `
+                        <div style="display: flex; align-items: center; justify-content: space-between">
+                            <div class="post-caption-nickname">@${post.nickname}</div>
+                            <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
+                                <img
+                                    src="/icon/comment.png"
+                                    class="icon"
+                                    onclick="openCommentModal(${post.id})"
+                                >
+                                <span class="comment_count">${post.commentCount}</span>
+                                <img
+                                    src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
+                                    class="icon"
+                                    onclick="toggleLike(event, this, ${post.id})"
+                                >
+                                <span class="like-count">${post.likeCount} / ${post.likeGoal}</span>
+                            </div>
+                        </div>
+                        <div class="post-meta" style="padding: 0.2rem 0.8rem 0rem 0.8rem; font-size: 10px; color: #888;">
+                            ${createdText}
+                        </div>
+
+                        <div class="post-caption-container">
+                            <div class="post-caption-content">${post.content}</div>
+                            <span class="read-more" onclick="expandCaption(this)" style="display: none;">더보기</span>
+                        </div>
+                    `;
+
+                listEl.appendChild(card);
+
+                requestAnimationFrame(() => {
+                    const captionEl = card.querySelector('.post-caption-content');
+                    const readMoreEl = card.querySelector('.read-more');
+
+                    const lineHeight = parseFloat(getComputedStyle(captionEl).lineHeight);
+                    const maxHeight = lineHeight * 2;
+
+                    if (captionEl.scrollHeight > maxHeight + 2) {
+                        captionEl.classList.add('truncated');
+                        readMoreEl.style.display = 'inline';
+                    }
+                });
+
+            })
+    }
+
+    function getRelativeTime(dateStr) {
+        const created = new Date(dateStr.replace(" ", "T")); // 서버 시간 문자열 → JS Date
+        const now = new Date();
+
+        const diffMs = now - created;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHr = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHr / 24);
+
+        if (diffSec < 60) return `${diffSec}초 전`;
+        if (diffMin < 60) return `${diffMin}분 전`;
+        if (diffHr < 24) return `${diffHr}시간 전`;
+        if (diffDay < 7) return `${diffDay}일 전`;
+
+        // 일주일 이상은 날짜로
+        return created.toLocaleDateString('ko-KR', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        });
+    }
+
+    function openImageViewModalFromElement(imgElement) {
+        const card = imgElement.closest(".post-card");
+        const images = Array.from(card.querySelectorAll(".slide-image")).map(img => img.src);
+        const index = parseInt(imgElement.getAttribute("data-index")) || 0;
+        openImageViewModal(images, index);
+    }
+
+    function openImageViewModal(images, index) {
+        console.log("모달 열기 시도:", index, images);
+        currentImages = images;
+        currentImageIndex = index;
+        const modal = document.getElementById('imageViewModal');
+        modal.classList.remove('hidden');
+        updateImageView();
+    }
+
+    function updateImageView() {
+        const img = document.getElementById('modalImageView');
+        img.src = currentImages[currentImageIndex];
+
+        const indicatorContainer = document.getElementById('imageIndicatorContainer');
+        indicatorContainer.innerHTML = ""; // 초기화
+
+        currentImages.forEach((_, i) => {
+            const dot = document.createElement("span");
+            dot.style.width = "7px";
+            dot.style.height = "7px";
+            dot.style.borderRadius = "50%";
+            dot.style.background = i === currentImageIndex ? "white" : "#bbb";
+            dot.style.transition = "background 0.3s";
+            indicatorContainer.appendChild(dot);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadPosts();
+    });
+
+</script>
+</html>

@@ -274,6 +274,7 @@
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
     var pendingCommentPostId = null;
+    var representativeFile = null;
     let imageList = [];
     let currentPage = 0;
     var isLastPage = false;
@@ -507,7 +508,11 @@
             }
             const newFileName = `upload_${Date.now()}_${index}.${extension}`;
             const newFile = new File([file], newFileName, { type: file.type });
+
             imageList.push(newFile);
+            if (!representativeFile) {
+                representativeFile = newFile;
+            }
         });
 
         renderImagePreviews();
@@ -535,6 +540,12 @@
 
         const formData = new FormData();
         formData.append("content", content);
+
+        // 대표 이미지를 0번 인덱스로 넣기
+        const orderedList = representativeFile
+            ? [representativeFile, ...imageList.filter(f => f !== representativeFile)]
+            : imageList;
+
         imageList.forEach(file => formData.append("images", file));
 
         fetch("/post", {
@@ -558,6 +569,7 @@
             .finally(() => {
                 loading.style.display = "none";
                 submitBtn.disabled = false;
+                representativeFile = null;
             });
     });
 
@@ -922,60 +934,55 @@
     }
 
     function setRepresentativeImage(file) {
-        imageList = imageList.filter(f => f !== file); // 일단 제거
-        imageList.unshift(file); // 0번 인덱스로 삽입
-        renderImagePreviews();
+        representativeFile = file;
+        renderImagePreviews(); // 순서 보존하며 다시 렌더
     }
 
-    function renderImagePreviews() {
+    async function renderImagePreviews() {
         const previewContainer = document.getElementById("imagePreviewContainer");
-        previewContainer.innerHTML = ""; // 초기화
+        previewContainer.innerHTML = "";
 
-        imageList.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "preview-image-wrapper";
+        for (const file of imageList) {
+            const imgURL = await readFileAsDataURL(file);
 
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.title = "클릭 시 대표 이미지로 설정";
+            const wrapper = document.createElement("div");
+            wrapper.className = "preview-image-wrapper";
 
-                const btn = document.createElement("button");
-                btn.className = "remove-image";
-                btn.innerText = "×";
-                btn.onclick = (ev) => {
-                    ev.stopPropagation();
-                    wrapper.remove();
-                    imageList = imageList.filter(i => i !== file);
-                    renderImagePreviews();
-                };
+            const img = document.createElement("img");
+            img.src = imgURL;
+            img.title = "클릭 시 대표 이미지로 설정";
+            img.onclick = () => setRepresentativeImage(file);
 
-                if (index === 0) {
-                    const badge = document.createElement("div");
-                    badge.innerText = "대표";
-                    badge.style.cssText = `
-                      position: absolute;
-                      top: 2px;
-                      left: 2px;
-                      background: #e91e63;
-                      color: white;
-                      font-size: 10px;
-                      padding: 2px 6px;
-                      border-radius: 4px;
-                      z-index: 2;
-                  `;
-                    wrapper.appendChild(badge);
+            const btn = document.createElement("button");
+            btn.className = "remove-image";
+            btn.innerText = "×";
+            btn.onclick = (ev) => {
+                ev.stopPropagation();
+                imageList = imageList.filter(i => i !== file);
+                if (representativeFile === file) {
+                    representativeFile = imageList[0] || null;
                 }
-
-                wrapper.onclick = () => {
-                    if (index !== 0) setRepresentativeImage(file);
-                };
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(btn);
-                previewContainer.appendChild(wrapper);
+                renderImagePreviews();
             };
+
+            if (file === representativeFile) {
+                const badge = document.createElement("div");
+                badge.className = "represent-label";
+                badge.innerText = "대표";
+                wrapper.appendChild(badge);
+            }
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(btn);
+            previewContainer.appendChild(wrapper);
+        }
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.onerror = reject;
             reader.readAsDataURL(file);
         });
     }

@@ -18,6 +18,8 @@ public interface PostService {
 
     Page<ViewResponseDto> getPosts(ViewPostRequestDto viewPostRequestDto);
 
+    ViewResponseDto getPost(Long id, String uuid);
+
     Page<ViewCommentResponseDto> getComments(ViewCommentRequestDto viewCommentRequestDto);
 
     LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto);
