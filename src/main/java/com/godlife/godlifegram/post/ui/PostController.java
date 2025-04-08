@@ -41,6 +41,7 @@ public class PostController {
     public BaseResponse<UploadResponseDto> uploadPost(@RequestParam("content") String content,
                                                       @RequestParam("images") List<MultipartFile> images,
                                                       @SessionAttribute("user") SigninResponseSvcDto user) {
+        System.out.println(images.get(0).getName());
         if(images.size() > 5) {
             throw new ApiErrorException(ResultCode.FILE_SIZE_OVER_FIVE);
         }
