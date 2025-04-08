@@ -490,72 +490,48 @@
         setTimeout(() => modal.classList.add("hidden"), 300);
     }
 
-    // --- 새로 추가: 모든 파일을 JPEG 형식으로 변환하는 함수 ---
-    function convertImageToJpeg(file, callback) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                canvas.toBlob(function(blob) {
-                    // 새 파일 이름은 현재 타임스탬프를 이용하여 생성
-                    const newFileName = `upload_${Date.now()}.jpg`;
-                    const newFile = new File([blob], newFileName, { type: 'image/jpeg' });
-                    callback(newFile);
-                }, 'image/jpeg', 0.9); // 품질 90%
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
     function handleImageUpload(event) {
         const files = event.target.files;
         const previewContainer = document.getElementById("imagePreviewContainer");
-
-        const validFiles = Array.from(files).filter(file => {
-            const isValid = file instanceof File && file.type.startsWith("image/");
-            if (!isValid) {
-                console.warn("잘못된 파일 감지됨:", file);
-            }
-            return isValid;
-        });
 
         if (imageList.length + files.length > 5) {
             alert("이미지는 최대 5개까지 업로드 가능합니다.");
             return;
         }
 
-        validFiles.forEach((file, index) => {
-            // 모든 파일을 JPEG로 변환
-            convertImageToJpeg(file, function(validFile) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "preview-image-wrapper";
+        Array.from(files).forEach((file, index) => {
+            // 강제로 새로운 파일 이름 생성 (확장자는 원본의 확장자 사용, 없으면 jpg로 기본)
+            let extension = 'jpg';
+            if (file.name && file.name.lastIndexOf('.') !== -1) {
+                extension = file.name.substring(file.name.lastIndexOf('.') + 1);
+            }
+            const newFileName = `upload_${Date.now()}_${index}.${extension}`;
 
-                    const img = document.createElement("img");
-                    img.src = e.target.result;
+            // 새 File 객체 생성: 항상 새 이름과 원래의 파일 내용을 사용하여 생성
+            const newFile = new File([file], newFileName, { type: file.type });
 
-                    const btn = document.createElement("button");
-                    btn.className = "remove-image";
-                    btn.innerText = "×";
-                    btn.onclick = () => {
-                        wrapper.remove();
-                        imageList = imageList.filter(i => i !== validFile);
-                    };
+            const reader = new FileReader();
+            reader.onload = e => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "preview-image-wrapper";
 
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(btn);
-                    previewContainer.appendChild(wrapper);
-                    imageList.push(validFile);
+                const img = document.createElement("img");
+                img.src = e.target.result;
+
+                const btn = document.createElement("button");
+                btn.className = "remove-image";
+                btn.innerText = "×";
+                btn.onclick = () => {
+                    wrapper.remove();
+                    imageList = imageList.filter(i => i !== newFile);
                 };
-                reader.readAsDataURL(validFile);
-            });
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(btn);
+                previewContainer.appendChild(wrapper);
+                imageList.push(newFile);
+            };
+            reader.readAsDataURL(newFile);
         });
 
         event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
@@ -573,16 +549,8 @@
 
         const formData = new FormData();
         formData.append("content", content);
-        for (let i = 0; i < imageList.length; i++) {
-            const file = imageList[i];
-            if (file instanceof File) {
-                // 파일 이름이 없을 경우 기본값을 지정합니다.
-                formData.append("images", file, `upload_${i}.jpg`);
-            } else {
-                console.error("Invalid file detected:", file);
-            }
-        }
-        alert(content + "\n" + formData.getAll("images").length)
+        imageList.forEach(file => formData.append("images", file));
+
         fetch("/post", {
             method: "POST",
             body: formData
