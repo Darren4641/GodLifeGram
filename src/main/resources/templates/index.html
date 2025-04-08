@@ -561,7 +561,7 @@
             const file = imageList[i];
             if (file instanceof File) {
                 // 파일 이름이 없을 경우 기본값을 지정합니다.
-                formData.append("images", file, file.name || `upload_${i}.jpg`);
+                formData.append("images", file, `upload_${i}.jpg`);
             } else {
                 console.error("Invalid file detected:", file);
             }
