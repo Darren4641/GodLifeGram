@@ -492,6 +492,7 @@
 
     function handleImageUpload(event) {
         const files = event.target.files;
+        console.log("선택된 파일:", files);
         const previewContainer = document.getElementById("imagePreviewContainer");
 
         const validFiles = Array.from(files).filter(f => f instanceof File && f.type.startsWith("image/"));
