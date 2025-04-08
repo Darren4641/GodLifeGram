@@ -177,6 +177,7 @@
                 <input type="file" multiple onchange="handleImageUpload(event)">
                 <span>＋</span>
             </label>
+
             <div id="imagePreviewContainer">
             </div>
         </div>
@@ -493,7 +494,6 @@
 
     function handleImageUpload(event) {
         const files = event.target.files;
-        const previewContainer = document.getElementById("imagePreviewContainer");
 
         if (imageList.length + files.length > 5) {
             alert("이미지는 최대 5개까지 업로드 가능합니다.");
@@ -501,41 +501,17 @@
         }
 
         Array.from(files).forEach((file, index) => {
-            // 강제로 새로운 파일 이름 생성 (확장자는 원본의 확장자 사용, 없으면 jpg로 기본)
             let extension = 'jpg';
             if (file.name && file.name.lastIndexOf('.') !== -1) {
                 extension = file.name.substring(file.name.lastIndexOf('.') + 1);
             }
             const newFileName = `upload_${Date.now()}_${index}.${extension}`;
-
-            // 새 File 객체 생성: 항상 새 이름과 원래의 파일 내용을 사용하여 생성
             const newFile = new File([file], newFileName, { type: file.type });
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "preview-image-wrapper";
-
-                const img = document.createElement("img");
-                img.src = e.target.result;
-
-                const btn = document.createElement("button");
-                btn.className = "remove-image";
-                btn.innerText = "×";
-                btn.onclick = () => {
-                    wrapper.remove();
-                    imageList = imageList.filter(i => i !== newFile);
-                };
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(btn);
-                previewContainer.appendChild(wrapper);
-                imageList.push(newFile);
-            };
-            reader.readAsDataURL(newFile);
+            imageList.push(newFile);
         });
 
-        event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
+        renderImagePreviews();
+        event.target.value = "";
     }
 
     document.getElementById("uploadForm").addEventListener("submit", function (e) {
@@ -942,6 +918,65 @@
                 d2 = Math.floor(d2 / 16);
             }
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
+
+    function setRepresentativeImage(file) {
+        imageList = imageList.filter(f => f !== file); // 일단 제거
+        imageList.unshift(file); // 0번 인덱스로 삽입
+        renderImagePreviews();
+    }
+
+    function renderImagePreviews() {
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        previewContainer.innerHTML = ""; // 초기화
+
+        imageList.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "preview-image-wrapper";
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.title = "클릭 시 대표 이미지로 설정";
+
+                const btn = document.createElement("button");
+                btn.className = "remove-image";
+                btn.innerText = "×";
+                btn.onclick = (ev) => {
+                    ev.stopPropagation();
+                    wrapper.remove();
+                    imageList = imageList.filter(i => i !== file);
+                    renderImagePreviews();
+                };
+
+                if (index === 0) {
+                    const badge = document.createElement("div");
+                    badge.innerText = "대표";
+                    badge.style.cssText = `
+                      position: absolute;
+                      top: 2px;
+                      left: 2px;
+                      background: #e91e63;
+                      color: white;
+                      font-size: 10px;
+                      padding: 2px 6px;
+                      border-radius: 4px;
+                      z-index: 2;
+                  `;
+                    wrapper.appendChild(badge);
+                }
+
+                wrapper.onclick = () => {
+                    if (index !== 0) setRepresentativeImage(file);
+                };
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(btn);
+                previewContainer.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
         });
     }
 
