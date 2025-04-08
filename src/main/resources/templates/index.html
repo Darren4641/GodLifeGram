@@ -492,10 +492,16 @@
 
     function handleImageUpload(event) {
         const files = event.target.files;
-        console.log("선택된 파일:", files);
+        alert("선택된 파일:", files);
         const previewContainer = document.getElementById("imagePreviewContainer");
 
-        const validFiles = Array.from(files).filter(f => f instanceof File && f.type.startsWith("image/"));
+        const validFiles = Array.from(files).filter(file => {
+            const isValid = file instanceof File && file.type.startsWith("image/");
+            if (!isValid) {
+                console.warn("잘못된 파일 감지됨:", file);
+            }
+            return isValid;
+        });
 
         if (imageList.length + files.length > 5) {
             alert("이미지는 최대 5개까지 업로드 가능합니다.");
@@ -516,7 +522,7 @@
                 btn.innerText = "×";
                 btn.onclick = () => {
                     wrapper.remove();
-                    imageList = imageList.filter(i => i !== file); // 리스트에서도 제거
+                    imageList = imageList.filter(i => i !== file);
                 };
 
                 wrapper.appendChild(img);
@@ -526,7 +532,6 @@
             };
             reader.readAsDataURL(file);
         });
-
 
         event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
     }
