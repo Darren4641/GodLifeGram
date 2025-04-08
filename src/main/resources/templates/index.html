@@ -507,12 +507,16 @@
             return;
         }
 
-        validFiles.forEach(file => {
-            // If the file name is empty, create a new File with a default name
-            let validFile = file;
-            if (!file.name || file.name.trim() === '') {
-                validFile = new File([file], `upload_${Date.now()}.jpg`, { type: file.type });
+        validFiles.forEach((file, index) => {
+            // 파일의 확장자 추출 (없으면 jpg로 기본)
+            let extension = 'jpg';
+            if (file.name && file.name.indexOf('.') !== -1) {
+                extension = file.name.substring(file.name.lastIndexOf('.') + 1);
             }
+            // 새 파일 이름 생성
+            const newFileName = `upload_${Date.now()}_${index}.${extension}`;
+            // 새로운 File 객체 생성 (파일 내용, 새 이름, MIME 타입 지정)
+            let validFile = new File([file], newFileName, { type: file.type });
 
             const reader = new FileReader();
             reader.onload = e => {
