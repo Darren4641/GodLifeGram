@@ -267,6 +267,7 @@
         </div>
     </div>
 </div>
+<div id="loadingOverlay" style="display: none;"></div>
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 <script type="text/javascript" th:inline="javascript">
@@ -547,6 +548,15 @@
             return;
         }
 
+        // 로딩창 표시
+        let loading = document.getElementById("loadingOverlay");
+        loading.innerHTML = `<div class="loader"></div>`;
+        loading.style.display = "flex";
+
+        // 버튼 비활성화
+        const submitBtn = document.querySelector("#uploadForm button[type='submit']");
+        submitBtn.disabled = true;
+
         const formData = new FormData();
         formData.append("content", content);
         imageList.forEach(file => formData.append("images", file));
@@ -563,12 +573,15 @@
                 return res.json();
             })
             .then(data => {
-                alert("업로드 성공!");
                 closeUploadModal();
                 location.reload(); // 업로드 후 새로고침
             })
             .catch(err => {
                 alert(err.message || "오류 발생");
+            })
+            .finally(() => {
+                loading.style.display = "none";
+                submitBtn.disabled = false;
             });
     });
 
