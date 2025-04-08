@@ -566,7 +566,7 @@
                 console.error("Invalid file detected:", file);
             }
         }
-        alert(content + "\n" + formData.get("images").length)
+        alert(content + "\n" + formData.getAll("images").length)
         fetch("/post", {
             method: "POST",
             body: formData
