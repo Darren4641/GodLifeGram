@@ -492,7 +492,6 @@
 
     function handleImageUpload(event) {
         const files = event.target.files;
-        alert("선택된 파일:", files);
         const previewContainer = document.getElementById("imagePreviewContainer");
 
         const validFiles = Array.from(files).filter(file => {
@@ -551,7 +550,8 @@
         for (let i = 0; i < imageList.length; i++) {
             const file = imageList[i];
             if (file instanceof File) {
-                formData.append("images", file);
+                // 파일 이름이 없을 경우 기본값을 지정합니다.
+                formData.append("images", file, file.name || `upload_${i}.jpg`);
             } else {
                 console.error("Invalid file detected:", file);
             }
