@@ -169,12 +169,12 @@
         <button class="close-btn" onclick="closeUploadModal()">✕</button>
     </div>
 
-    <form id="uploadForm" class="upload-form">
+    <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
         <textarea placeholder="오늘의 갓생을 인증해보세요!" rows="4"></textarea>
 
         <div class="upload-images">
             <label class="image-box">
-                <input type="file" accept="image/*" multiple onchange="handleImageUpload(event)">
+                <input type="file" accept="image/*" capture="camera" multiple onchange="handleImageUpload(event)">
                 <span>＋</span>
             </label>
             <div id="imagePreviewContainer">
