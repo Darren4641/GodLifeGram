@@ -494,12 +494,14 @@
         const files = event.target.files;
         const previewContainer = document.getElementById("imagePreviewContainer");
 
+        const validFiles = Array.from(files).filter(f => f instanceof File && f.type.startsWith("image/"));
+
         if (imageList.length + files.length > 5) {
             alert("이미지는 최대 5개까지 업로드 가능합니다.");
             return;
         }
 
-        Array.from(files).forEach(file => {
+        validFiles.forEach(file => {
             const reader = new FileReader();
             reader.onload = e => {
                 const wrapper = document.createElement("div");
@@ -524,6 +526,7 @@
             reader.readAsDataURL(file);
         });
 
+
         event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
     }
 
@@ -539,7 +542,14 @@
 
         const formData = new FormData();
         formData.append("content", content);
-        imageList.forEach(file => formData.append("images", file));
+        for (let i = 0; i < imageList.length; i++) {
+            const file = imageList[i];
+            if (file instanceof File) {
+                formData.append("images", file);
+            } else {
+                console.error("Invalid file detected:", file);
+            }
+        }
 
         fetch("/post", {
             method: "POST",
