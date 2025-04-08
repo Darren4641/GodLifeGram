@@ -508,6 +508,12 @@
         }
 
         validFiles.forEach(file => {
+            // If the file name is empty, create a new File with a default name
+            let validFile = file;
+            if (!file.name || file.name.trim() === '') {
+                validFile = new File([file], `upload_${Date.now()}.jpg`, { type: file.type });
+            }
+
             const reader = new FileReader();
             reader.onload = e => {
                 const wrapper = document.createElement("div");
@@ -521,15 +527,15 @@
                 btn.innerText = "×";
                 btn.onclick = () => {
                     wrapper.remove();
-                    imageList = imageList.filter(i => i !== file);
+                    imageList = imageList.filter(i => i !== validFile);
                 };
 
                 wrapper.appendChild(img);
                 wrapper.appendChild(btn);
                 previewContainer.appendChild(wrapper);
-                imageList.push(file);
+                imageList.push(validFile);
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(validFile);
         });
 
         event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
