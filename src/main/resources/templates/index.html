@@ -490,6 +490,29 @@
         setTimeout(() => modal.classList.add("hidden"), 300);
     }
 
+    // --- 새로 추가: 모든 파일을 JPEG 형식으로 변환하는 함수 ---
+    function convertImageToJpeg(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(function(blob) {
+                    // 새 파일 이름은 현재 타임스탬프를 이용하여 생성
+                    const newFileName = `upload_${Date.now()}.jpg`;
+                    const newFile = new File([blob], newFileName, { type: 'image/jpeg' });
+                    callback(newFile);
+                }, 'image/jpeg', 0.9); // 품질 90%
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
     function handleImageUpload(event) {
         const files = event.target.files;
         const previewContainer = document.getElementById("imagePreviewContainer");
@@ -508,38 +531,31 @@
         }
 
         validFiles.forEach((file, index) => {
-            // 파일의 확장자 추출 (없으면 jpg로 기본)
-            let extension = 'jpg';
-            if (file.name && file.name.indexOf('.') !== -1) {
-                extension = file.name.substring(file.name.lastIndexOf('.') + 1);
-            }
-            // 새 파일 이름 생성
-            const newFileName = `upload_${Date.now()}_${index}.${extension}`;
-            // 새로운 File 객체 생성 (파일 내용, 새 이름, MIME 타입 지정)
-            let validFile = new File([file], newFileName, { type: file.type });
+            // 모든 파일을 JPEG로 변환
+            convertImageToJpeg(file, function(validFile) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "preview-image-wrapper";
 
-            const reader = new FileReader();
-            reader.onload = e => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "preview-image-wrapper";
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
 
-                const img = document.createElement("img");
-                img.src = e.target.result;
+                    const btn = document.createElement("button");
+                    btn.className = "remove-image";
+                    btn.innerText = "×";
+                    btn.onclick = () => {
+                        wrapper.remove();
+                        imageList = imageList.filter(i => i !== validFile);
+                    };
 
-                const btn = document.createElement("button");
-                btn.className = "remove-image";
-                btn.innerText = "×";
-                btn.onclick = () => {
-                    wrapper.remove();
-                    imageList = imageList.filter(i => i !== validFile);
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(btn);
+                    previewContainer.appendChild(wrapper);
+                    imageList.push(validFile);
                 };
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(btn);
-                previewContainer.appendChild(wrapper);
-                imageList.push(validFile);
-            };
-            reader.readAsDataURL(validFile);
+                reader.readAsDataURL(validFile);
+            });
         });
 
         event.target.value = ""; // 같은 파일 다시 선택 가능하게 초기화
