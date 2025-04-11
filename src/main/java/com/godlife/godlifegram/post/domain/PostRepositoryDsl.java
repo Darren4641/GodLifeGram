@@ -6,12 +6,9 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
-import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +49,7 @@ public class PostRepositoryDsl {
                 .select(
                         post.id,
                         post.content,
+                        post.likeGoal,
                         postLike.id.countDistinct(),
                         postComment.id.countDistinct(),
                         user.nickname,
@@ -90,7 +88,7 @@ public class PostRepositoryDsl {
                     it.get(post.content),
                     it.get(postComment.id.countDistinct()),
                     it.get(postLike.id.countDistinct()),
-                    10L,
+                    it.get(post.likeGoal),
                     it.get(user.nickname),
                     images,
                     it.get(isLiked) != null && it.get(isLiked) == 1,
@@ -121,7 +119,7 @@ public class PostRepositoryDsl {
                                 post.content,
                                 postComment.id.countDistinct(),
                                 postLike.id.countDistinct(),
-                                Expressions.constant(0L),
+                                post.likeGoal,
                                 user.nickname,
                                 imageUrls,
                                 isLiked,
@@ -183,7 +181,6 @@ public class PostRepositoryDsl {
 
         return switch (keyword) {
             case "like" -> new OrderSpecifier<>(direction, postLike.id.countDistinct());
-            case "view" -> new OrderSpecifier<>(direction, post.viewCount);
             case "created" -> new OrderSpecifier<>(direction, post.createdDate);
             default -> new OrderSpecifier<>(direction, post.createdDate);
         };

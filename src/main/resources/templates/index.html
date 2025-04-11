@@ -84,82 +84,79 @@
     </div>
     <div id="scroll-sentinel" style="height: 1px;"></div>
 
-    <!-- ✅ 갓생 상세 모달 -->
-    <div id="postModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <img src="https://api.dopaminedefense.team/file/image/b01cae63-fe8a-4815-979e-f5a0a1dc537b_image_picker_2C6C09D2-2428-4910-B63D-2AE49B765CDA-1557-00000085F41B5965.jpg.jpg" class="post-image" alt="갓생 이미지">
-            <p class="modal-text">상세 내용이 여기에 표시됩니다. 루틴 인증 텍스트 등등.</p>
-        </div>
-    </div>
-
     <!-- ✅ 로그인/회원가입 모달 -->
-    <div id="signupModal" class="modal hidden">
-        <div class="modal-content" style="position: relative;">
-            <button class="close" onclick="closeSignupModal()" style="
-            position: absolute;
-            top: 1%;
-            right: 1%;
-            background: none;
-            border: none;
-            font-size: 1.7rem;
-            color: #000000;
-            width: auto;
-            cursor: pointer;
-        ">&times;</button>
-            <form class="signup-box" onsubmit="return handleSignup(event)">
-                <h3>회원가입</h3>
-                <input type="email" name="email" id="email" placeholder="이메일" required>
-                <input type="text" name="nickname" id="nickname" placeholder="닉네임" required>
-                <input type="password" name="password" id="pw1" placeholder="비밀번호" required>
-                <input type="password" id="pw2" placeholder="비밀번호 확인" required>
-                <div class="error" id="pwError"></div>
-                <button type="submit" class="loginBtn">가입하기</button>
-            </form>
-        </div>
+    <div th:fragment="signupModal">
+        <div id="signupModal" class="modal hidden">
+            <div class="modal-content" style="position: relative;">
+                <button class="close" onclick="closeSignupModal()" style="
+                position: absolute;
+                top: 1%;
+                right: 1%;
+                background: none;
+                border: none;
+                font-size: 1.7rem;
+                color: #000000;
+                width: auto;
+                cursor: pointer;
+            ">&times;</button>
+                <form class="signup-box" onsubmit="return handleSignup(event)">
+                    <h3>회원가입</h3>
+                    <input type="email" name="email" id="email" placeholder="이메일" required>
+                    <input type="text" name="nickname" id="nickname" placeholder="닉네임" required>
+                    <input type="password" name="password" id="pw1" placeholder="비밀번호" required>
+                    <input type="password" id="pw2" placeholder="비밀번호 확인" required>
+                    <div class="error" id="pwError"></div>
+                    <button type="submit" class="loginBtn">가입하기</button>
+                </form>
+            </div>
 
+        </div>
     </div>
 
-    <div id="authModal" class="modal hidden">
-        <div class="modal-content" style="position: relative;">
-            <button class="close" onclick="closeAuthModal()" style="
-            position: absolute;
-            top: 1%;
-            right: 1%;
-            background: none;
-            border: none;
-            font-size: 1.7rem;
-            color: #000000;
-            width: auto;
-            cursor: pointer;
-        ">&times;</button>
+    <div th:fragment="authModal">
+        <div id="authModal" class="modal hidden" th:fragment="authModal">
+            <div class="modal-content" style="position: relative;">
+                <button class="close" onclick="closeAuthModal()" style="
+                position: absolute;
+                top: 1%;
+                right: 1%;
+                background: none;
+                border: none;
+                font-size: 1.7rem;
+                color: #000000;
+                width: auto;
+                cursor: pointer;
+            ">&times;</button>
 
-            <h3>로그인</h3>
-            <input type="text" placeholder="아이디" id="inputId">
-            <input type="password" placeholder="비밀번호" id="inputPw">
-            <div class="error" id="loginError"></div>
-            <button class="loginBtn" onclick="login()">로그인하기</button>
+                <h3>로그인</h3>
+                <input type="text" placeholder="아이디" id="inputId">
+                <input type="password" placeholder="비밀번호" id="inputPw">
+                <div class="error" id="loginError"></div>
+                <button class="loginBtn" onclick="login()">로그인하기</button>
 
-            <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
-                계정이 없으신가요? <a href="javascript:void(0);" onclick="openSignupModal()" style="color: #b0aaaac2; text-decoration: none;">회원가입</a>
-            </p>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
+                    계정이 없으신가요? <a href="javascript:void(0);" onclick="openSignupModal()" style="color: #b0aaaac2; text-decoration: none;">회원가입</a>
+                </p>
+            </div>
+
         </div>
-
     </div>
 </div>
 
 <!-- 💖 중앙 하트 애니메이션용 -->
-<div id="heart-effect" style="
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9999;
-    transition: all 0.7s ease;
-">
-    <img src="/icon/heart.png" alt="하트 효과" style="width: 100px; height: auto;">
+<div th:fragment="heartEffec">
+    <div id="heart-effect" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 9999;
+        transition: all 0.7s ease;
+    ">
+        <img src="/icon/heart.png" alt="하트 효과" style="width: 100px; height: auto;">
+    </div>
 </div>
 <!-- 갓생 업로드 모달 -->
 <div id="uploadModal" class="upload-modal hidden">
@@ -182,93 +179,157 @@
             </div>
         </div>
 
+        <span>목표 좋아요 수</span>
+        <!-- 목표 좋아요 수 입력 -->
+        <div class="like-goal-wrapper" style="display: flex; align-items: center; justify-content: left; margin: 1rem 0;">
+            <img src="/icon/heart.png" alt="하트" style="width: 22px; height: 22px; margin-right: 0.5rem;">
+
+            <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <button type="button" onclick="changeLikeGoal(-1)" style="
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        ">−</button>
+
+                <input type="number" id="likeGoalInput" min="3" value="3" style="
+            width: 60px;
+            padding: 6px 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        ">
+
+                <button type="button" onclick="changeLikeGoal(1)" style="
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        ">＋</button>
+            </div>
+        </div>
+
         <button type="submit" class="upload-submit">업로드</button>
     </form>
 </div>
 <!-- ✅ 댓글 모달 -->
-<div id="commentModal" class="comment-modal hidden">
-    <div class="upload-handle"></div>
-    <div class="comment-header">
-        <span>댓글</span>
-        <button class="close-btn" onclick="closeCommentModal()">✕</button>
+<div th:fragment="commentModal">
+    <div id="commentModal" class="comment-modal hidden">
+        <div class="upload-handle"></div>
+        <div class="comment-header">
+            <span>댓글</span>
+            <button class="close-btn" onclick="closeCommentModal()">✕</button>
+        </div>
+        <div class="comment-list" id="commentList">
+        </div>
+        <form class="comment-form" onsubmit="submitComment(event)">
+            <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." required />
+            <button type="submit">등록</button>
+        </form>
     </div>
-    <div class="comment-list" id="commentList">
-    </div>
-    <form class="comment-form" onsubmit="submitComment(event)">
-        <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." required />
-        <button type="submit">등록</button>
-    </form>
 </div>
-<div id="imageViewModal" class="modal hidden" onclick="closeImageViewModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <button class="imageViewClose" onclick="closeImageViewModal()" style="
-          position: fixed;
-          top: 1%;
-          right: 1%;
-          font-size: 30px;
-          margin: 0;
-          padding: 10px;
-          width: auto;
-          background: none;
-          border: none;
-          color: white;
-          z-index: 1002;
-          cursor: pointer;
-        ">&times;</button>
-        <div class="modal-content" onclick="event.stopPropagation()" style="position: relative;">
-            <button class="prevImage" onclick="prevImage()" style="
-              position: absolute;
-              left: 10px;
-              top: 50%;
-              transform: translateY(-50%);
-              font-size: 60px;
+
+<div th:fragment="imageViewModal">
+    <div id="imageViewModal" class="modal hidden" onclick="closeImageViewModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="imageViewClose" onclick="closeImageViewModal()" style="
+              position: fixed;
+              top: 1%;
+              right: 1%;
+              font-size: 30px;
+              margin: 0;
+              padding: 10px;
+              width: auto;
               background: none;
               border: none;
-              opacity: 0;
-              width: 50%;
-              height: 100%;
-              z-index: 1001;
+              color: white;
+              z-index: 1002;
               cursor: pointer;
-          ">‹</button>
-            <img id="modalImageView" src="" alt="확대 이미지" style="
-              max-width: 90vw;
-              max-height: 80vh;
-              display: block;
-              margin: auto;
-              object-fit: contain;
-              border-radius: 10px;
-          ">
-            <div id="imageIndicatorContainer" style="
-                position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                gap: 6px;
-                background: rgba(0, 0, 0, 0.4);
-                padding: 4px 10px;
-                border-radius: 10px;
-                z-index: 1002;
-            ">
+            ">&times;</button>
+            <div class="modal-content" onclick="event.stopPropagation()" style="position: relative;">
+                <button class="prevImage" onclick="prevImage()" style="
+                  position: absolute;
+                  left: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  font-size: 60px;
+                  background: none;
+                  border: none;
+                  opacity: 0;
+                  width: 50%;
+                  height: 100%;
+                  z-index: 1001;
+                  cursor: pointer;
+              ">‹</button>
+                <img id="modalImageView" src="" alt="확대 이미지" style="
+                  max-width: 90vw;
+                  max-height: 80vh;
+                  display: block;
+                  margin: auto;
+                  object-fit: contain;
+                  border-radius: 10px;
+              ">
+                <div id="imageIndicatorContainer" style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    display: flex;
+                    gap: 6px;
+                    background: rgba(0, 0, 0, 0.4);
+                    padding: 4px 10px;
+                    border-radius: 10px;
+                    z-index: 1002;
+                ">
+                </div>
+                <button class="prevImage" onclick="nextImage()" style="
+                  position: absolute;
+                  right: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  font-size: 60px;
+                  background: none;
+                  border: none;
+                  opacity: 0;
+                  width: 50%;
+                  height: 100%;
+                  z-index: 1001;
+                  cursor: pointer;
+              ">›</button>
             </div>
-            <button class="prevImage" onclick="nextImage()" style="
-              position: absolute;
-              right: 10px;
-              top: 50%;
-              transform: translateY(-50%);
-              font-size: 60px;
-              background: none;
-              border: none;
-              opacity: 0;
-              width: 50%;
-              height: 100%;
-              z-index: 1001;
-              cursor: pointer;
-          ">›</button>
         </div>
     </div>
 </div>
 <div id="loadingOverlay" style="display: none;"></div>
+<!-- 공유 완료 모달 -->
+<div id="shareToast" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+">
+    링크가 복사되었습니다!
+</div>
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 <script type="text/javascript" th:inline="javascript">
@@ -284,12 +345,6 @@
     let currentImageIndex = 0;
     let currentImages = [];
 
-    function openModal(id) {
-        document.getElementById('postModal').classList.remove('hidden');
-    }
-    function closeModal() {
-        document.getElementById('postModal').classList.add('hidden');
-    }
 
     function checkLoginBeforeUpload() {
         if (user) {
@@ -519,10 +574,19 @@
         event.target.value = "";
     }
 
+    function changeLikeGoal(delta) {
+        const input = document.getElementById("likeGoalInput");
+        let current = parseInt(input.value) || 1;
+        current += delta;
+        if (current < 1) current = 1;
+        input.value = current;
+    }
+
     document.getElementById("uploadForm").addEventListener("submit", function (e) {
         e.preventDefault(); // 기본 form submit 막기
 
         const content = document.querySelector("#uploadForm textarea").value.trim();
+        const goal = document.getElementById("likeGoalInput").value;
 
         if (!content) {
             alert("내용을 입력해주세요.");
@@ -540,6 +604,7 @@
 
         const formData = new FormData();
         formData.append("content", content);
+        formData.append("likeGoal", goal);
 
         // 대표 이미지를 0번 인덱스로 넣기
         const orderedList = representativeFile
@@ -641,6 +706,11 @@
                         <div style="display: flex; align-items: center; justify-content: space-between">
                             <div class="post-caption-nickname">@${post.nickname}</div>
                             <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
+                                <img
+                                    src="/icon/share.png"
+                                    class="icon"
+                                    onclick="copyPostLink(${post.id})"
+                                >
                                 <img
                                     src="/icon/comment.png"
                                     class="icon"
@@ -768,6 +838,25 @@
         button.remove();
     }
 
+    function copyPostLink(postId) {
+        const url = `${location.origin}/post-detail?id=${postId}`;
+        navigator.clipboard.writeText(url).then(() => {
+            const toast = document.getElementById("shareToast");
+            toast.style.display = "block";
+            toast.style.opacity = "1";
+            toast.style.transition = "opacity 0.4s ease";
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                setTimeout(() => {
+                    toast.style.display = "none";
+                }, 400);
+            }, 1300);
+        }).catch(() => {
+            alert("복사 실패. 브라우저에서 허용되지 않았습니다.");
+        });
+    }
+
     function getRelativeTime(dateStr) {
         const created = new Date(dateStr.replace(" ", "T")); // 서버 시간 문자열 → JS Date
         const now = new Date();
@@ -846,18 +935,25 @@
                 currentCommentPage++;
                 isLastCommentPage = data.data.last;
 
+                // 기존의 "더보기" 버튼을 무조건 제거
                 const existingMoreBtn = document.getElementById("loadMoreCommentBtn");
+                if (existingMoreBtn) {
+                    existingMoreBtn.remove();
+                }
+
+                // 댓글을 더 불러올 수 있으면 새 "더보기" 버튼을 생성하여 맨 아래에 추가
+                // 남아있는 댓글이 있다면 "더보기" 요소를 생성 (버튼 모양 없이 밑줄만)
                 if (!isLastCommentPage) {
-                    if (!existingMoreBtn) {
-                        const moreBtn = document.createElement("button");
-                        moreBtn.id = "loadMoreCommentBtn";
-                        moreBtn.textContent = "더보기";
-                        moreBtn.style.cssText = "margin: 10px auto; display: block; font-size: 0.9rem;";
-                        moreBtn.onclick = () => loadComments(postId, false);
-                        list.appendChild(moreBtn);
-                    }
-                } else if (existingMoreBtn) {
-                    existingMoreBtn.remove(); // 마지막 페이지면 버튼 제거
+                    const moreBtn = document.createElement("span");
+                    moreBtn.id = "loadMoreCommentBtn";
+                    moreBtn.textContent = "더보기";
+                    // 심플한 밑줄 텍스트 스타일 적용
+                    moreBtn.style.cssText = "display: block; margin: 10px auto; font-size: 0.9rem; text-decoration: underline; cursor: pointer; color: inherit;text-align: center;";
+                    moreBtn.onclick = () => loadComments(postId, false);
+                    list.appendChild(moreBtn);
+
+                    // 새로운 "더보기" 요소가 보이도록 스크롤 이동 (옵션)
+                    moreBtn.scrollIntoView({ behavior: "smooth" });
                 }
             })
             .catch(err => {
@@ -883,6 +979,12 @@
         const formData = new FormData();
         formData.append("postId", postId);
         formData.append("content", content);
+
+        // 로딩창 표시
+        let loading = document.getElementById("loadingOverlay");
+        loading.innerHTML = `<div class="loader"></div>`;
+        loading.style.display = "flex";
+
         fetch(`/post/comment`, {
             method: "POST",
             body: formData
@@ -892,11 +994,50 @@
                 return res.json();
             })
             .then(() => {
+                const list = document.getElementById("commentList");
+
+                // "아직 댓글이 없습니다." 메시지가 있으면 제거
+                const noCommentElement = list.querySelector('.no-comment');
+                if (noCommentElement) {
+                    noCommentElement.remove();
+                }
+
+                const div = document.createElement("div");
+                div.className = "comment-item";
+
+                // 현재 시간을 기준으로 상대 시간 표시 (getRelativeTime 함수 사용)
+                const now = new Date();
+                const formattedTime = getRelativeTime(now.toISOString());
+
+                div.innerHTML = `
+            <img src="/icon/god.png" alt="user" class="comment-avatar">
+            <div class="comment-body">
+                <div class="comment-text">
+                    <span class="nickname">${user.nickname}</span> ${content}
+                </div>
+                <div class="comment-time">${formattedTime}</div>
+            </div>
+        `;
+                // 새 댓글 요소를 맨 위에 삽입
+                list.insertBefore(div, list.firstChild);
+
+                // "더보기" 버튼이 있다면 최하단으로 재정렬
+                const moreBtn = document.getElementById("loadMoreCommentBtn");
+                if (moreBtn) {
+                    moreBtn.remove();
+                    list.appendChild(moreBtn);
+                }
+
+                // 댓글 목록을 스크롤 맨 위로 올리기
+                list.scrollTop = 0;
+
                 input.value = "";
-                loadComments(postId);
                 alert("등록되었습니다.");
             })
-            .catch(err => alert(err.message));
+            .catch(err => alert(err.message))
+            .finally(() => {
+                loading.style.display = "none";
+            });
     }
 
     function registerUUID() {

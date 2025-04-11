@@ -89,7 +89,8 @@ html, body {
 
     /* 그 외 아이콘은 기본 유지 */
     .icon[src*="empty_heart.png"],
-    .icon[src*="comment.png"]{
+    .icon[src*="comment.png"],
+    .icon[src*="share.png"]{
         filter: invert(1) !important;
     }
 
@@ -931,3 +932,9 @@ body {
      border-radius: 4px;
      z-index: 10;
  }
+
+.comment-list {
+    max-height: 400px; /* 원하는 높이 */
+    overflow-y: auto;
+    padding-right: 8px; /* 스크롤바 공간 확보 */
+}

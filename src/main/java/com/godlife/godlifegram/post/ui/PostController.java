@@ -40,13 +40,14 @@ public class PostController {
 
     @PostMapping
     public BaseResponse<UploadResponseDto> uploadPost(@RequestParam("content") String content,
+                                                      @RequestParam("likeGoal") Long likeGoal,
                                                       @RequestParam("images") List<MultipartFile> images,
                                                       @SessionAttribute("user") SigninResponseSvcDto user) {
         if(images.size() > 5) {
             throw new ApiErrorException(ResultCode.FILE_SIZE_OVER_FIVE);
         }
 
-        UploadRequestSvcDto serviceReqDto = new UploadRequestSvcDto(content, images, user);
+        UploadRequestSvcDto serviceReqDto = new UploadRequestSvcDto(content, likeGoal, images, user);
 
         UploadResponseSvcDto serviceResDto = postService.upload(serviceReqDto);
 

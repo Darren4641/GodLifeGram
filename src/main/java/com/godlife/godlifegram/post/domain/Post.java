@@ -20,18 +20,16 @@ public class Post extends BaseEntity {
     @Column(name = "content", columnDefinition = "text")
     private String content;
 
-    @Column(name = "view_count")
-    private Long viewCount = 0L;
-
-    @Column(name = "like_count")
-    private Long likeCount = 0L;
+    @Column(name = "like_goal")
+    private Long likeGoal = 3L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    public static Post upload(String content, User user) {
+    public static Post upload(String content, Long likeGoal, User user) {
         Post post = new Post();
         post.content = content;
+        post.likeGoal = likeGoal;
         post.user = user;
         return post;
     }

@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UploadRequestSvcDto {
     private String content;
+    private Long likeGoal;
     private List<MultipartFile> images;
     private SigninResponseSvcDto user;
 }

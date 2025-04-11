@@ -49,12 +49,37 @@
 
     <div class="post-list">
     </div>
+
+    <div th:replace="index :: signupModal"></div>
+    <div th:replace="index :: authModal"></div>
+    <div th:replace="index :: heartEffec"></div>
+    <div th:replace="index :: commentModal"></div>
+    <div th:replace="index :: imageViewModal"></div>
+    <!-- 공유 완료 모달 -->
+    <div id="shareToast" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+">
+        링크가 복사되었습니다!
+    </div>
 </div>
+<div id="loadingOverlay" style="display: none;"></div>
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
-
+    var pendingCommentPostId = null;
     function registerUUID() {
         if (!localStorage.getItem('godlife_uuid')) {
             localStorage.setItem('godlife_uuid', 'uuid_' + generateUUID());
@@ -67,7 +92,136 @@
         return url.searchParams.get(name);
     }
 
+    function closeAuthModal() {
+        document.getElementById('authModal').classList.add('hidden');
+    }
 
+    document.getElementById('authModal').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            login();
+        }
+    });
+
+    function login() {
+        const email = document.getElementById('inputId').value;
+        const password = document.getElementById('inputPw').value;
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = "";
+
+        fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        })
+            .then(response => {
+                return response.json().then(body => ({ status: response.status, body })); // 응답을 객체로 변환
+            })
+            .then(({ status, body }) => {
+                if (status >= 400) {
+                    errorDiv.textContent = body.errors?.length > 0 ? body.errors[0].message : body.message || "서버 오류 발생";
+                    return;
+                }
+
+                if (pendingCommentPostId) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("commentPostId", pendingCommentPostId);
+                    location.href = url.toString();
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(err => {
+                errorDiv.textContent = err.message || "로그인 중 오류 발생";
+            });
+    }
+
+    function showLogin() {
+        document.getElementById('authModal').classList.remove('hidden');
+    }
+
+    function openSignupModal() {
+        closeAuthModal();
+        document.getElementById("signupModal").classList.remove("hidden");
+    }
+
+    function closeSignupModal() {
+        document.getElementById("signupModal").classList.add("hidden");
+    }
+
+
+    function copyPostLink(postId) {
+        const url = `${location.origin}/post-detail?id=${postId}`;
+        navigator.clipboard.writeText(url).then(() => {
+            const toast = document.getElementById("shareToast");
+            toast.style.display = "block";
+            toast.style.opacity = "1";
+            toast.style.transition = "opacity 0.4s ease";
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                setTimeout(() => {
+                    toast.style.display = "none";
+                }, 400);
+            }, 1300);
+        }).catch(() => {
+            alert("복사 실패. 브라우저에서 허용되지 않았습니다.");
+        });
+    }
+
+    function handleSignup(event) {
+        event.preventDefault(); // 폼 전송 막기
+
+        const email = document.getElementById('email').value;
+        const nickname = document.getElementById('nickname').value;
+        const pw1 = document.getElementById('pw1').value;
+        const pw2 = document.getElementById('pw2').value;
+        const errorDiv = document.getElementById('pwError');
+
+        if (pw1 !== pw2) {
+            errorDiv.textContent = "비밀번호가 일치하지 않습니다.";
+            return false;
+        }
+
+        fetch("/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: email,
+                nickname: nickname,
+                password: pw1
+            })
+        })
+            .then(response => {
+                return response.json().then(body => ({ status: response.status, body })); // 응답을 객체로 변환
+            })
+            .then(({ status, body }) => {
+                if (status >= 400) {
+                    errorDiv.textContent = body.errors?.length > 0 ? body.errors[0].message : body.message || "서버 오류 발생";
+                    return;
+                }
+
+                alert("회원가입 완료! 로그인 되었습니다.");
+                location.reload();
+            })
+            .catch(err => {
+                errorDiv.textContent = err.message || "오류가 발생했습니다.";
+            });
+
+        return false;
+    }
+
+    function goMyPage() {
+        const isLoggedIn = sessionStorage.getItem('loggedIn');
+        if (isLoggedIn) {
+            location.href = '/myposts';
+        } else {
+            alert('로그인 후 이용해 주세요!');
+        }
+    }
 
     function loadPosts() {
         const uuid = registerUUID();
@@ -127,6 +281,11 @@
                             <div class="post-caption-nickname">@${post.nickname}</div>
                             <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
                                 <img
+                                    src="/icon/share.png"
+                                    class="icon"
+                                    onclick="copyPostLink(${post.id})"
+                                >
+                                <img
                                     src="/icon/comment.png"
                                     class="icon"
                                     onclick="openCommentModal(${post.id})"
@@ -145,27 +304,240 @@
                         </div>
 
                         <div class="post-caption-container">
-                            <div class="post-caption-content">${post.content}</div>
-                            <span class="read-more" onclick="expandCaption(this)" style="display: none;">더보기</span>
+                            <div class="post-caption-content" style="display: block;">${post.content}</div>
                         </div>
                     `;
 
                 listEl.appendChild(card);
 
-                requestAnimationFrame(() => {
-                    const captionEl = card.querySelector('.post-caption-content');
-                    const readMoreEl = card.querySelector('.read-more');
+            })
+    }
 
-                    const lineHeight = parseFloat(getComputedStyle(captionEl).lineHeight);
-                    const maxHeight = lineHeight * 2;
+    function openCommentModal(postId) {
+        const modal = document.getElementById("commentModal");
+        modal.classList.add("show");
+        modal.classList.remove("hidden");
+        modal.dataset.postId = postId;
+        loadComments(postId);
+    }
 
-                    if (captionEl.scrollHeight > maxHeight + 2) {
-                        captionEl.classList.add('truncated');
-                        readMoreEl.style.display = 'inline';
-                    }
+    function removeQueryParam(param) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(param);
+
+        // URL만 바꿔줌 (리로드 없이!)
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+    }
+
+    function closeCommentModal() {
+        const modal = document.getElementById("commentModal");
+        modal.classList.remove("show");
+        setTimeout(() => modal.classList.add("hidden"), 300);
+        document.getElementById("commentList").innerHTML = "";
+        removeQueryParam("commentPostId");
+    }
+
+    let currentCommentPage = 0;
+    let isLastCommentPage = false;
+
+    function loadComments(postId, isInitial = true) {
+        const list = document.getElementById("commentList");
+
+        if (isInitial) {
+            list.innerHTML = ""; // 초기 로딩이면 비우기
+            currentCommentPage = 0;
+            isLastCommentPage = false;
+        }
+
+        fetch(`/post/comment?postId=${postId}&page=${currentCommentPage}&size=5`)
+            .then(res => res.json())
+            .then(data => {
+                const comments = data.data.content;
+
+                if(comments.length === 0) {
+                    const span = document.createElement("span");
+                    span.textContent = "아직 댓글이 없습니다."
+                    span.className = "no-comment"
+                    list.appendChild(span);
+                }
+                comments.forEach(comment => {
+                    const div = document.createElement("div");
+                    div.className = "comment-item";
+                    div.innerHTML = `
+                    <img src="/icon/god.png" alt="user" class="comment-avatar">
+                    <div class="comment-body">
+                        <div class="comment-text">
+                            <span class="nickname">${comment.nickname}</span> ${comment.content}
+                        </div>
+                        <div class="comment-time">${getRelativeTime(comment.createdDate)}</div>
+                    </div>
+                `;
+                    list.appendChild(div);
                 });
 
+                currentCommentPage++;
+                isLastCommentPage = data.data.last;
+
+                // 기존의 "더보기" 버튼을 무조건 제거
+                const existingMoreBtn = document.getElementById("loadMoreCommentBtn");
+                if (existingMoreBtn) {
+                    existingMoreBtn.remove();
+                }
+
+                // 댓글을 더 불러올 수 있으면 새 "더보기" 버튼을 생성하여 맨 아래에 추가
+                // 남아있는 댓글이 있다면 "더보기" 요소를 생성 (버튼 모양 없이 밑줄만)
+                if (!isLastCommentPage) {
+                    const moreBtn = document.createElement("span");
+                    moreBtn.id = "loadMoreCommentBtn";
+                    moreBtn.textContent = "더보기";
+                    // 심플한 밑줄 텍스트 스타일 적용
+                    moreBtn.style.cssText = "display: block; margin: 10px auto; font-size: 0.9rem; text-decoration: underline; cursor: pointer; color: inherit;text-align: center;";
+                    moreBtn.onclick = () => loadComments(postId, false);
+                    list.appendChild(moreBtn);
+
+                    // 새로운 "더보기" 요소가 보이도록 스크롤 이동 (옵션)
+                    moreBtn.scrollIntoView({ behavior: "smooth" });
+                }
             })
+            .catch(err => {
+                alert("댓글 불러오기 실패: " + err.message);
+            });
+    }
+
+    function submitComment(event) {
+        event.preventDefault();
+        const modal = document.getElementById("commentModal");
+        const postId = modal.dataset.postId;
+        const input = document.getElementById("commentInput");
+        const content = input.value.trim();
+        if (!content) return;
+
+        if (!user) {
+            pendingCommentPostId = postId;
+            showLogin(); // 로그인 모달 띄우기
+            closeCommentModal();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("postId", postId);
+        formData.append("content", content);
+
+        // 로딩창 표시
+        let loading = document.getElementById("loadingOverlay");
+        loading.innerHTML = `<div class="loader"></div>`;
+        loading.style.display = "flex";
+
+        fetch(`/post/comment`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("댓글 등록 실패");
+                return res.json();
+            })
+            .then(() => {
+                const list = document.getElementById("commentList");
+
+                // "아직 댓글이 없습니다." 메시지가 있으면 제거
+                const noCommentElement = list.querySelector('.no-comment');
+                if (noCommentElement) {
+                    noCommentElement.remove();
+                }
+
+                const div = document.createElement("div");
+                div.className = "comment-item";
+
+                // 현재 시간을 기준으로 상대 시간 표시 (getRelativeTime 함수 사용)
+                const now = new Date();
+                const formattedTime = getRelativeTime(now.toISOString());
+
+                div.innerHTML = `
+            <img src="/icon/god.png" alt="user" class="comment-avatar">
+            <div class="comment-body">
+                <div class="comment-text">
+                    <span class="nickname">${user.nickname}</span> ${content}
+                </div>
+                <div class="comment-time">${formattedTime}</div>
+            </div>
+        `;
+                // 새 댓글 요소를 맨 위에 삽입
+                list.insertBefore(div, list.firstChild);
+
+                // "더보기" 버튼이 있다면 최하단으로 재정렬
+                const moreBtn = document.getElementById("loadMoreCommentBtn");
+                if (moreBtn) {
+                    moreBtn.remove();
+                    list.appendChild(moreBtn);
+                }
+
+                // 댓글 목록을 스크롤 맨 위로 올리기
+                list.scrollTop = 0;
+
+                input.value = "";
+                alert("등록되었습니다.");
+            })
+            .catch(err => alert(err.message))
+            .finally(() => {
+                loading.style.display = "none";
+            });
+    }
+
+    function toggleLike(event, icon, postId) {
+        event.stopPropagation();
+        // 하트 이미지 교체
+        const isLiked = icon.getAttribute("src").includes("empty_heart");
+        icon.setAttribute("src", isLiked ? "/icon/heart.png" : "/icon/empty_heart.png");
+
+        const countSpan = icon.nextElementSibling;
+        if (countSpan && countSpan.classList.contains("like-count")) {
+            const [current, total] = countSpan.textContent.trim().split("/").map(s => parseInt(s));
+            const newCount = isLiked ? current + 1 : current - 1;
+            countSpan.textContent = `${newCount} / ${total}`;
+
+            if (newCount >= total) {
+                countSpan.parentElement.classList.add("completed");
+            } else {
+                countSpan.parentElement.classList.remove("completed");
+            }
+        }
+
+        const uuid = registerUUID();
+
+        fetch("/post/like", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                postId: postId,
+                uuid: uuid,
+                isLiked: isLiked
+            })
+        })
+            .then(async res => {
+                const response = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 400) {
+                        alert(response.message || "요청 형식 오류");
+                        return;
+                    }
+                }
+            })
+            .catch(err => {
+                alert("좋아요 처리 중 오류 발생: " + err.message);
+            });
+
+
+        // ❤️ 하트 애니메이션 (좋아요일 때만)
+        if (isLiked) {
+            const effect = document.getElementById("heart-effect");
+            effect.style.opacity = "1";
+            effect.style.transform = "translate(-50%, -50%) scale(1.4)";
+            setTimeout(() => {
+                effect.style.opacity = "0";
+                effect.style.transform = "translate(-50%, -50%) scale(1)";
+            }, 700);
+        }
     }
 
     function getRelativeTime(dateStr) {
@@ -205,6 +577,10 @@
         updateImageView();
     }
 
+    function closeImageViewModal() {
+        document.getElementById('imageViewModal').classList.add('hidden');
+    }
+
     function updateImageView() {
         const img = document.getElementById('modalImageView');
         img.src = currentImages[currentImageIndex];
@@ -223,9 +599,53 @@
         });
     }
 
+    function prevImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            updateImageView();
+        }
+    }
+
+
+    function nextImage() {
+        if (currentImageIndex < currentImages.length - 1) {
+            currentImageIndex++;
+            updateImageView();
+        }
+    }
+
+    (function handleKeyboardAdjustForCommentForm() {
+        const commentForm = document.querySelector(".comment-form");
+        let originalStyle = "";
+
+        if (!commentForm) return;
+
+        window.addEventListener("resize", () => {
+            const currentHeight = window.innerHeight;
+            const baseHeight = document.documentElement.clientHeight;
+
+            const isKeyboardOpen = currentHeight < baseHeight;
+
+            if (isKeyboardOpen) {
+                // 키보드 올라온 상태: 하단 고정 유지
+                commentForm.style.position = "fixed";
+                commentForm.style.bottom = "0";
+                commentForm.style.left = "0";
+                commentForm.style.width = "100%";
+                commentForm.style.zIndex = "1002";
+            } else {
+                // 키보드 내려간 상태: 스타일 복구
+                commentForm.removeAttribute("style");
+                commentForm.classList.add("comment-form"); // 기본 스타일 재적용
+            }
+        });
+    })();
+
     document.addEventListener("DOMContentLoaded", () => {
         loadPosts();
     });
+
+
 
 </script>
 </html>

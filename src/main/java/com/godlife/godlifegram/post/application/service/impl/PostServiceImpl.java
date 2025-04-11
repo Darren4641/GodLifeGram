@@ -43,7 +43,7 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findByEmail(uploadRequestSvcDto.getUser().getEmail())
                 .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
 
-        Post newPost = Post.upload(uploadRequestSvcDto.getContent(), user);
+        Post newPost = Post.upload(uploadRequestSvcDto.getContent(), uploadRequestSvcDto.getLikeGoal(), user);
         postRepository.save(newPost);
 
         uploadRequestSvcDto.getImages().forEach(image -> {
@@ -114,6 +114,6 @@ public class PostServiceImpl implements PostService {
 
         postCommentRepository.save(newComment);
 
-        return postConverter.toWriteCommentSvcResponseDto(newComment);
+        return postConverter.toWriteCommentSvcResponseDto(newComment, user);
     }
 }
