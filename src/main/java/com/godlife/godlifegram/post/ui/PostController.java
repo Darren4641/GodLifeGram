@@ -87,7 +87,8 @@ public class PostController {
 
         WriteCommentRequestSvcDto serviceReqDto = new WriteCommentRequestSvcDto(postId, content, user);
 
-        WriteCommentResponseSvcDto serviceResDto = postService.saveComment(serviceReqDto);
+        String serverBaseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        WriteCommentResponseSvcDto serviceResDto = postService.saveComment(serviceReqDto, serverBaseUrl);
 
         return new BaseResponse<>(postConverter.toWriteCommentResponseDto(serviceResDto));
     }

@@ -94,11 +94,14 @@ public class PostServiceImpl implements PostService {
             PostLike newPostLike = PostLike.like(likeRequestSvcDto.getUuid(), post);
             postLikeRepository.save(newPostLike);
 
-            Subscription subscription = new Subscription(
-                    writer.getEndPoint(),
-                    new Subscription.Keys(writer.getP256dh(), writer.getAuth()));
+            if(writer.getIsPushEnabled()) {
+                Subscription subscription = new Subscription(
+                        writer.getEndPoint(),
+                        new Subscription.Keys(writer.getP256dh(), writer.getAuth()));
 
-            pushNotificationService.sendPushNotificationFromLike(subscription, serverBaseUrl, post.getId());
+                pushNotificationService.sendPushNotificationFromLike(subscription, serverBaseUrl, post.getId());
+            }
+
 
         } else if(postLike != null && !likeRequestSvcDto.getIsLiked()) {
             postLikeRepository.delete(postLike);
@@ -114,7 +117,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto) {
+    public WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto, String serverBaseUrl) {
         User user = userRepository.findByEmail(writeCommentRequestSvcDto.getUser().getEmail())
                 .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
 
@@ -128,6 +131,17 @@ public class PostServiceImpl implements PostService {
                 );
 
         postCommentRepository.save(newComment);
+
+        User writer = userRepository.findById(post.getUser().getId())
+                .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        if(writer.getIsPushEnabled()) {
+            Subscription subscription = new Subscription(
+                    writer.getEndPoint(),
+                    new Subscription.Keys(writer.getP256dh(), writer.getAuth()));
+
+            pushNotificationService.sendPushNotificationFromComment(subscription, serverBaseUrl, post.getId(), user.getNickname());
+        }
 
         return postConverter.toWriteCommentSvcResponseDto(newComment, user);
     }

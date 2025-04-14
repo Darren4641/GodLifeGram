@@ -28,7 +28,7 @@ public interface PostService {
 
     LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto, String serverBaseUrl);
 
-    WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto);
+    WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto, String serverBaseUrl);
 
     MyPostCountResponseSvcDto getMyPostCount(Long id);
 

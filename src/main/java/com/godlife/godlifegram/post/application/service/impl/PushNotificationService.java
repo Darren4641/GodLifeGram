@@ -22,7 +22,36 @@ public class PushNotificationService {
         Map<String, String> payloadData = new HashMap<>();
         payloadData.put("title", "갓생하루");
         payloadData.put("body", "게시물에 좋아요를 받았어요!");
-        payloadData.put("icon", serverBaseUrl + "/post-detail?id=" + postId);
+        payloadData.put("icon", serverBaseUrl + "/icon/icon.png");
+        payloadData.put("url", serverBaseUrl + "/post-detail?id=" + postId);
+
+        try {
+            String payloadJson = objectMapper.writeValueAsString(payloadData);
+            Notification notification = new Notification(
+                    subscription.endpoint,
+                    subscription.keys.p256dh,
+                    subscription.keys.auth,
+                    payloadJson
+            );
+
+            HttpResponse response = pushService.send(notification);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (statusCode != 201) {
+                throw new RuntimeException();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void sendPushNotificationFromComment(Subscription subscription, String serverBaseUrl, Long postId, String commentWriter) {
+        Map<String, String> payloadData = new HashMap<>();
+        payloadData.put("title", "갓생하루");
+        payloadData.put("body", commentWriter + "님이 내 게시물에 댓글을 남겼어요!");
+        payloadData.put("icon", serverBaseUrl + "/icon/icon.png");
+        payloadData.put("url", serverBaseUrl + "/post-detail?id=" + postId);
 
         try {
             String payloadJson = objectMapper.writeValueAsString(payloadData);
