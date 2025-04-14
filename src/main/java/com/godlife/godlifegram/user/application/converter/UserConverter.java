@@ -6,6 +6,7 @@ import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDt
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.ui.dto.request.SigninRequestDto;
 import com.godlife.godlifegram.user.ui.dto.request.SignupRequestDto;
+import com.godlife.godlifegram.user.ui.dto.response.ProfileResponseDto;
 import com.godlife.godlifegram.user.ui.dto.response.SigninResponseDto;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,10 @@ public class UserConverter {
 
     public SigninResponseSvcDto toSigninResponseSvcDto(User user) {
         return new SigninResponseSvcDto(user.getId(), user.getEmail(), user.getNickname());
+    }
+
+    public ProfileResponseDto toProfileResponseDto(User user) {
+        return new ProfileResponseDto(user.getId(), user.getEmail(), user.getNickname());
     }
 
 }

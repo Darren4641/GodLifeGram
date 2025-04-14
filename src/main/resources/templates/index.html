@@ -711,7 +711,7 @@
                                     class="icon"
                                     onclick="openCommentModal(${post.id})"
                                 >
-                                <span class="comment_count">${post.commentCount}</span>
+                                <span class="comment_count" style="color: black !important;">${post.commentCount}</span>
                                 <img
                                     src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
                                     class="icon"
@@ -919,7 +919,7 @@
                     <img src="/icon/god.png" alt="user" class="comment-avatar">
                     <div class="comment-body">
                         <div class="comment-text">
-                            <span class="nickname">${comment.nickname}</span> ${comment.content}
+                            <a class="nickname" href="/profile?id=${comment.userId}">@${comment.nickname}</a> ${comment.content}
                         </div>
                         <div class="comment-time">${getRelativeTime(comment.createdDate)}</div>
                     </div>

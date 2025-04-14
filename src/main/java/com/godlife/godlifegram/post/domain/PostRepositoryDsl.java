@@ -181,7 +181,7 @@ public class PostRepositoryDsl {
         return new PageImpl<>(content, pageable, count);
     }
 
-    public MyPostCountResponseSvcDto myPostCount(String email) {
+    public MyPostCountResponseSvcDto myPostCount(Long id) {
 
         JPQLQuery<Long> likeCount = JPAExpressions.select(postLike.id.count())
                 .from(postLike)
@@ -202,7 +202,7 @@ public class PostRepositoryDsl {
                 )
                 .from(user)
                 .leftJoin(post).on(post.user.id.eq(user.id))
-                .where(user.email.eq(email))
+                .where(user.id.eq(id))
                 .groupBy(user.id)
                 .fetchOne();
     }
@@ -216,11 +216,15 @@ public class PostRepositoryDsl {
                         Projections.constructor(
                                 MyPostResponseDto.class,
                                 post.id,
-                                thumbnail
+                                thumbnail,
+                                new CaseBuilder()
+                                        .when(postLike.id.countDistinct().goe(post.likeGoal)).then(true)
+                                        .otherwise(false)
                         )
                 )
                 .from(post)
                 .join(postImage).on(postImage.post.id.eq(post.id))
+                .join(postLike).on(postLike.post.id.eq(post.id))
                 .where(post.user.id.eq(id))
                 .groupBy(post.id)
                 .fetch();

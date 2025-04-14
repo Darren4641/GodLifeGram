@@ -10,6 +10,7 @@ import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDt
 import com.godlife.godlifegram.user.application.service.AuthService;
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.domain.user.UserRepository;
+import com.godlife.godlifegram.user.ui.dto.response.ProfileResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,5 +48,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return userConverter.toSigninResponseSvcDto(user);
+    }
+
+    public ProfileResponseDto getUserProfile(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
+
+        return userConverter.toProfileResponseDto(user);
     }
 }

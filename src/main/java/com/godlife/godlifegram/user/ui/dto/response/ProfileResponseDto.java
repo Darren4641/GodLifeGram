@@ -1,16 +1,14 @@
-package com.godlife.godlifegram.post.ui.dto.response;
+package com.godlife.godlifegram.user.ui.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyPostResponseDto {
+public class ProfileResponseDto {
     private Long id;
-    private String image;
-    private Boolean isCompleted;
-
+    private String email;
+    private String nickname;
 }

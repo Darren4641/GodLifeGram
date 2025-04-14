@@ -53,26 +53,20 @@
         <div class="profile-header">
             <img src="/icon/god.png" alt="프로필" class="profile-img">
             <div class="profile-info">
-                <div class="nickname" th:text="${user.nickname}"></div>
+                <div class="nickname" th:text="${profile.nickname}"></div>
                 <div class="stats">
-                    <span>게시물 <strong th:text="${postInfo.postCount}">24</strong></span>
-                    <span>하트 <strong th:text="${postInfo.likeCount}">378</strong></span>
+                    <span>게시물 <strong th:text="${profileInfo.postCount}">24</strong></span>
+                    <span>하트 <strong th:text="${profileInfo.likeCount}">378</strong></span>
                 </div>
             </div>
-            <span onclick="logout();" style="font-size: 0.8rem;text-decoration: underline;">로그아웃</span>
         </div>
 
         <!-- 탭 -->
         <div class="profile-tab">
-            <button class="tab-btn active" onclick="switchProfileTab('posts')">갓생</button>
-            <button class="tab-btn" onclick="switchProfileTab('settings')">설정</button>
+            <button class="tab-btn active" onclick="switchProfileTab('posts')">갓생 목록</button>
         </div>
 
 
-        <!-- 게시물 그리드 -->
-        <div class="profile-post-grid" id="myPostGrid">
-            <!-- JavaScript로 게시물 이미지 불러오기 -->
-        </div>
 
         <div id="tabContent" class="tab-content-area">
             <!-- JS로 갓생 게시물 or 설정 내용이 들어감 -->
@@ -84,6 +78,7 @@
 </body>
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
+    var profile = /*[[ ${profile} ]]*/;
 
     function goMyPage() {
         location.href = '/me';
@@ -118,7 +113,7 @@
         contentEl.innerHTML = "";
 
         if (tabName === "posts") {
-            fetch(`/post/user/${user.id}`)
+            fetch(`/post/user/${profile.id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (!data || !data.data || data.data.length === 0) {
@@ -159,24 +154,11 @@
                     contentEl.innerHTML = `<p style="color:red; text-align:center;">불러오기 실패: ${err.message}</p>`;
                 });
 
-        } else if (tabName === "settings") {
-            // ⚙️ 설정 정보 출력 (더미 데이터)
-            contentEl.innerHTML = `
-                <div class="setting-item"><strong>이메일:</strong> darren@example.com</div>
-                <div class="setting-item"><strong>닉네임:</strong> Darren</div>
-                <div class="setting-item"><strong>가입일:</strong> 2024-12-21</div>
-                <div class="setting-item"><strong>계정 상태:</strong> 활성</div>
-                <div class="setting-item"><strong>비밀번호 변경</strong></div>
-                <div class="setting-item"><strong>탈퇴하기</strong></div>
-            `;
         }
     }
 
     // 페이지 진입 시 기본 탭 실행
     window.addEventListener("DOMContentLoaded", () => {
-        if(!user) {
-            location.href = "/";
-        }
 
         switchProfileTab('posts');
     });

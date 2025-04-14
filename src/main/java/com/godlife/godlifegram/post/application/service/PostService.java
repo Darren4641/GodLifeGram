@@ -30,7 +30,7 @@ public interface PostService {
 
     WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto);
 
-    MyPostCountResponseSvcDto getMyPostCount(String email);
+    MyPostCountResponseSvcDto getMyPostCount(Long id);
 
     List<MyPostResponseDto> getMyPost(Long id);
 }

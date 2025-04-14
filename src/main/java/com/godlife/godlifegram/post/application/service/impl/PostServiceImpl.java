@@ -121,8 +121,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public MyPostCountResponseSvcDto getMyPostCount(String email) {
-        return postRepositoryDsl.myPostCount(email);
+    public MyPostCountResponseSvcDto getMyPostCount(Long id) {
+        return postRepositoryDsl.myPostCount(id);
     }
 
     public List<MyPostResponseDto> getMyPost(Long id) {
