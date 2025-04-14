@@ -95,6 +95,11 @@ public class PostController {
         return new BaseResponse<>(postService.getComments(viewPostRequestDto));
     }
 
+    @GetMapping("/user/{id}")
+    public BaseResponse<List<MyPostResponseDto>> viewPostByUserId(@PathVariable(name = "id") Long id) {
+        return new BaseResponse<>(postService.getMyPost(id));
+    }
+
 
     @GetMapping("/image/{date}/{id}/{file}")
     public ResponseEntity<byte[]> getImageProxy(@PathVariable("date") String date,

@@ -938,3 +938,103 @@ body {
     overflow-y: auto;
     padding-right: 8px; /* 스크롤바 공간 확보 */
 }
+
+.my-profile-container {
+    max-width: 700px;
+    padding: 1.2rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.profile-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eee;
+}
+
+.profile-info {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.nickname {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stats span {
+    font-size: 0.9rem;
+    margin-right: 10px;
+    color: #666;
+}
+
+.setting-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    filter: grayscale(80%);
+}
+
+.profile-tab {
+    display: flex;
+    justify-content: space-around;
+    margin: 1.2rem 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 0.8rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #555;
+    font-weight: 500;
+}
+
+.tab-btn.active {
+    border-bottom: 2px solid black;
+    color: black;
+}
+
+.profile-post-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.profile-post-grid img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tab-content-area {
+    margin-top: 1rem;
+}
+
+.setting-item {
+    margin-bottom: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: #f9f9f9;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.setting-item strong {
+    display: inline-block;
+    width: 100px;
+    font-weight: 600;
+}

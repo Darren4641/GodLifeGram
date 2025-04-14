@@ -471,12 +471,7 @@
     }
 
     function goMyPage() {
-        const isLoggedIn = sessionStorage.getItem('loggedIn');
-        if (isLoggedIn) {
-            location.href = '/myposts';
-        } else {
-            alert('로그인 후 이용해 주세요!');
-        }
+        location.href = '/me';
     }
 
     function toggleLike(event, icon, postId) {

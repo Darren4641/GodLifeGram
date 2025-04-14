@@ -1,5 +1,7 @@
 package com.godlife.godlifegram.post.domain;
 
+import com.godlife.godlifegram.post.application.dto.response.MyPostCountResponseSvcDto;
+import com.godlife.godlifegram.post.ui.dto.response.MyPostResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.querydsl.core.Tuple;
@@ -7,6 +9,8 @@ import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -175,6 +179,51 @@ public class PostRepositoryDsl {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(content, pageable, count);
+    }
+
+    public MyPostCountResponseSvcDto myPostCount(String email) {
+
+        JPQLQuery<Long> likeCount = JPAExpressions.select(postLike.id.count())
+                .from(postLike)
+                .join(postLike.post, post)
+                .where(post.user.id.eq(user.id));
+
+        return queryFactory
+                .select(
+                        Projections.constructor(
+                                MyPostCountResponseSvcDto.class,
+                                new CaseBuilder()
+                                        .when(post.id.count().isNull()).then(0L)
+                                        .otherwise(post.id.count()),
+                                new CaseBuilder()
+                                        .when(likeCount.isNull()).then(0L)
+                                        .otherwise(likeCount)
+                        )
+                )
+                .from(user)
+                .leftJoin(post).on(post.user.id.eq(user.id))
+                .where(user.email.eq(email))
+                .groupBy(user.id)
+                .fetchOne();
+    }
+
+    public List<MyPostResponseDto> getPostById(Long id) {
+        StringTemplate thumbnail = Expressions.stringTemplate(
+                "MIN({0})", postImage.imageUrl
+        );
+        return queryFactory
+                .select(
+                        Projections.constructor(
+                                MyPostResponseDto.class,
+                                post.id,
+                                thumbnail
+                        )
+                )
+                .from(post)
+                .join(postImage).on(postImage.post.id.eq(post.id))
+                .where(post.user.id.eq(id))
+                .groupBy(post.id)
+                .fetch();
     }
 
     private OrderSpecifier<?> getOrderSpecifier(String keyword, Order direction) {

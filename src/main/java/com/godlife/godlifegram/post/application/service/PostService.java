@@ -4,13 +4,17 @@ import com.godlife.godlifegram.post.application.dto.request.LikeRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.UploadRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.WriteCommentRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.LikeResponseSvcDto;
+import com.godlife.godlifegram.post.application.dto.response.MyPostCountResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.UploadResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.WriteCommentResponseSvcDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewCommentRequestDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
+import com.godlife.godlifegram.post.ui.dto.response.MyPostResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface PostService {
 
@@ -25,4 +29,8 @@ public interface PostService {
     LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto);
 
     WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto);
+
+    MyPostCountResponseSvcDto getMyPostCount(String email);
+
+    List<MyPostResponseDto> getMyPost(Long id);
 }

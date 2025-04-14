@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="57x57" th:href="@{/favicon/apple-icon-57x57.png}">
+    <link rel="apple-touch-icon" sizes="60x60" th:href="@{/favicon/apple-icon-60x60.png}">
+    <link rel="apple-touch-icon" sizes="72x72" th:href="@{/favicon/apple-icon-72x72.png}">
+    <link rel="apple-touch-icon" sizes="76x76" th:href="@{/favicon/apple-icon-76x76.png}">
+    <link rel="apple-touch-icon" sizes="114x114" th:href="@{/favicon/apple-icon-114x114.png}">
+    <link rel="apple-touch-icon" sizes="120x120" th:href="@{/favicon/apple-icon-120x120.png}">
+    <link rel="apple-touch-icon" sizes="144x144" th:href="@{/favicon/apple-icon-144x144.png}">
+    <link rel="apple-touch-icon" sizes="152x152" th:href="@{/favicon/apple-icon-152x152.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/apple-icon-180x180.png}">
+    <link rel="icon" type="image/png" sizes="192x192"  th:href="@{/favicon/android-icon-192x192.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/favicon/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
+    <link rel="stylesheet" href="/css/common.css?v=1" th:href="@{/css/common.css}">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <title>#갓생그램</title>
+    <style>
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- 네비게이션, 헤더, 포스트 목록 등 전체 내용 -->
+    <!-- ✅ 네비게이션 바 -->
+    <div class="nav-wrapper">
+        <nav class="nav">
+            <div class="nav-left" onclick="location.href='/'"><img src="/image/logo.png" alt="logo"></div>
+            <div class="nav-right">
+                <button th:if="${user != null}" onclick="goMyPage()">나의 갓생</button>
+
+                <!-- 비로그인 상태: 로그인 버튼 -->
+                <button th:unless="${user != null}" onclick="showLogin()">
+                    로그인
+                </button>
+            </div>
+        </nav>
+        <div class="nav-placeholder"></div>
+    </div>
+
+
+    <div class="my-profile-container">
+        <!-- 프로필 정보 -->
+        <div class="profile-header">
+            <img src="/icon/god.png" alt="프로필" class="profile-img">
+            <div class="profile-info">
+                <div class="nickname" th:text="${user.nickname}"></div>
+                <div class="stats">
+                    <span>게시물 <strong th:text="${postInfo.postCount}">24</strong></span>
+                    <span>하트 <strong th:text="${postInfo.likeCount}">378</strong></span>
+                </div>
+            </div>
+            <span onclick="logout();" style="font-size: 0.8rem;text-decoration: underline;">로그아웃</span>
+        </div>
+
+        <!-- 탭 -->
+        <div class="profile-tab">
+            <button class="tab-btn active" onclick="switchProfileTab('posts')">갓생</button>
+            <button class="tab-btn" onclick="switchProfileTab('settings')">설정</button>
+        </div>
+
+
+        <!-- 게시물 그리드 -->
+        <div class="profile-post-grid" id="myPostGrid">
+            <!-- JavaScript로 게시물 이미지 불러오기 -->
+        </div>
+
+        <div id="tabContent" class="tab-content-area">
+            <!-- JS로 갓생 게시물 or 설정 내용이 들어감 -->
+        </div>
+    </div>
+
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var user = /*[[ ${user} ]]*/;
+
+    function goMyPage() {
+        location.href = '/me';
+    }
+
+    function logout() {
+        fetch("/auth/logout", { method: "POST" })
+            .then(() => {
+                alert("로그아웃 되었습니다.");
+                location.href = '/';
+            })
+            .catch(() => alert("로그아웃 실패"));
+    }
+
+    function switchProfileTab(tabName, event = null) {
+        // 탭 버튼 활성화 전환
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.classList.remove("active");
+        });
+        if (event) {
+            event.target.classList.add("active");
+        } else {
+            // 초기 실행일 경우 posts 탭 버튼에 강제로 active 줌
+            const defaultTab = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
+            if (defaultTab) {
+                defaultTab.classList.add("active");
+            }
+        }
+
+        // 콘텐츠 영역 비우기
+        const contentEl = document.getElementById("tabContent");
+        contentEl.innerHTML = "";
+
+        if (tabName === "posts") {
+            fetch(`/post/user/${user.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data || !data.data || data.data.length === 0) {
+                        contentEl.innerHTML = "<p style='text-align:center; color: #888;'>작성한 갓생이 없습니다.</p>";
+                        return;
+                    }
+
+                    const grid = document.createElement("div");
+                    grid.className = "profile-post-grid";
+
+                    data.data.forEach(post => {
+                        const img = document.createElement("img");
+                        img.src = post.image || post.images[0]; // 대표 이미지
+                        img.alt = "갓생 이미지";
+                        img.onclick = () => location.href = `/post-detail?id=${post.id}`;
+                        grid.appendChild(img);
+                    });
+
+                    contentEl.appendChild(grid);
+                })
+                .catch(err => {
+                    contentEl.innerHTML = `<p style="color:red; text-align:center;">불러오기 실패: ${err.message}</p>`;
+                });
+
+        } else if (tabName === "settings") {
+            // ⚙️ 설정 정보 출력 (더미 데이터)
+            contentEl.innerHTML = `
+                <div class="setting-item"><strong>이메일:</strong> darren@example.com</div>
+                <div class="setting-item"><strong>닉네임:</strong> Darren</div>
+                <div class="setting-item"><strong>가입일:</strong> 2024-12-21</div>
+                <div class="setting-item"><strong>계정 상태:</strong> 활성</div>
+                <div class="setting-item"><strong>비밀번호 변경</strong></div>
+                <div class="setting-item"><strong>탈퇴하기</strong></div>
+            `;
+        }
+    }
+
+    // 페이지 진입 시 기본 탭 실행
+    window.addEventListener("DOMContentLoaded", () => {
+        if(!user) {
+            location.href = "/";
+        }
+
+        switchProfileTab('posts');
+    });
+
+</script>
+</html>

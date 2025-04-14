@@ -7,6 +7,7 @@ import com.godlife.godlifegram.post.application.dto.request.LikeRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.UploadRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.request.WriteCommentRequestSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.LikeResponseSvcDto;
+import com.godlife.godlifegram.post.application.dto.response.MyPostCountResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.UploadResponseSvcDto;
 import com.godlife.godlifegram.post.application.dto.response.WriteCommentResponseSvcDto;
 import com.godlife.godlifegram.post.application.service.PostService;
@@ -15,15 +16,17 @@ import com.godlife.godlifegram.post.infrastructure.S3Service;
 import com.godlife.godlifegram.post.infrastructure.dto.UploadedFileInfoDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewCommentRequestDto;
 import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
+import com.godlife.godlifegram.post.ui.dto.response.MyPostResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.domain.user.UserRepository;
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -115,5 +118,14 @@ public class PostServiceImpl implements PostService {
         postCommentRepository.save(newComment);
 
         return postConverter.toWriteCommentSvcResponseDto(newComment, user);
+    }
+
+    @Override
+    public MyPostCountResponseSvcDto getMyPostCount(String email) {
+        return postRepositoryDsl.myPostCount(email);
+    }
+
+    public List<MyPostResponseDto> getMyPost(Long id) {
+        return postRepositoryDsl.getPostById(id);
     }
 }

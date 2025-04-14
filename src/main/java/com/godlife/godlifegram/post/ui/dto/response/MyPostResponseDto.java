@@ -1,14 +1,15 @@
-package com.godlife.godlifegram.user.application.dto.response;
+package com.godlife.godlifegram.post.ui.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SigninResponseSvcDto {
+public class MyPostResponseDto {
     private Long id;
-    private String email;
-    private String nickname;
+    private String image;
+
 }
