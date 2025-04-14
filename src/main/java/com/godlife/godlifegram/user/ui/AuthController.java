@@ -6,16 +6,14 @@ import com.godlife.godlifegram.user.application.dto.request.SigninRequestSvcDto;
 import com.godlife.godlifegram.user.application.dto.request.SignupRequestSvcDto;
 import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import com.godlife.godlifegram.user.application.service.AuthService;
+import com.godlife.godlifegram.user.ui.dto.request.NotificationDto;
 import com.godlife.godlifegram.user.ui.dto.request.SigninRequestDto;
 import com.godlife.godlifegram.user.ui.dto.request.SignupRequestDto;
 import com.godlife.godlifegram.user.ui.dto.response.SigninResponseDto;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,6 +47,14 @@ public class AuthController {
     @PostMapping("/logout")
     public BaseResponse<String> logout(HttpSession session) {
         session.invalidate();
+        return new BaseResponse<>("OK");
+    }
+
+    @PostMapping("/subscribe")
+    public BaseResponse<?> subscribe(@RequestBody NotificationDto notificationDto,
+                                     @SessionAttribute("user") SigninResponseSvcDto user) {
+        notificationDto.setId(user.getId());
+        authService.subscribe(notificationDto);
         return new BaseResponse<>("OK");
     }
 

@@ -22,6 +22,7 @@ import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import nl.martijndwars.webpush.Subscription;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final S3Service s3Service;
+    private final PushNotificationService pushNotificationService;
     private final PostConverter postConverter;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -78,9 +80,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto) {
+    public LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto, String serverBaseUrl) {
         Post post = postRepository.findById(likeRequestSvcDto.getPostId())
                         .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        User writer = userRepository.findById(post.getUser().getId())
+                .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
 
         PostLike postLike = postLikeRepository.findByUuidAndPost(likeRequestSvcDto.getUuid(), post).orElse(null);
 
@@ -88,6 +93,13 @@ public class PostServiceImpl implements PostService {
         if(postLike == null && likeRequestSvcDto.getIsLiked()) {
             PostLike newPostLike = PostLike.like(likeRequestSvcDto.getUuid(), post);
             postLikeRepository.save(newPostLike);
+
+            Subscription subscription = new Subscription(
+                    writer.getEndPoint(),
+                    new Subscription.Keys(writer.getP256dh(), writer.getAuth()));
+
+            pushNotificationService.sendPushNotificationFromLike(subscription, serverBaseUrl, post.getId());
+
         } else if(postLike != null && !likeRequestSvcDto.getIsLiked()) {
             postLikeRepository.delete(postLike);
         } else {

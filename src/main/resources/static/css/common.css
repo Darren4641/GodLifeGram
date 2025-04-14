@@ -1067,3 +1067,88 @@ body {
     z-index: 2 !important;
     pointer-events: none !important;
 }
+
+.pwa-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 어두운 배경 */
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    animation: fade-in 0.3s ease-in-out;
+}
+
+/* 숨기기 */
+.hidden {
+    display: none;
+}
+
+/* 배너 */
+.pwa-banner {
+    position: relative;
+    width: 100%;
+    max-width: 450px;
+    background-color: #fff;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15), 0 -1px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 16px 16px 0 0;
+    padding: 24px;
+    animation: slide-up 0.3s ease-in-out;
+}
+
+/* 배너 슬라이드 애니메이션 */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* 닫기 버튼 */
+.close-button {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+.install-button {
+    background-color: #262626;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.ios-install-guide {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.ios-install-guide ol {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.ios-install-guide li {
+    margin-bottom: 8px;
+}

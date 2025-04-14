@@ -22,11 +22,13 @@ import com.godlife.godlifegram.post.ui.dto.response.*;
 import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 
@@ -72,8 +74,8 @@ public class PostController {
         }
 
         LikeRequestSvcDto serviceReqDto = postConverter.toLikeSvcRequestDto(likePostRequestDto);
-
-        LikeResponseSvcDto serviceResDto = postService.likeOrCancel(serviceReqDto);
+        String serverBaseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        LikeResponseSvcDto serviceResDto = postService.likeOrCancel(serviceReqDto, serverBaseUrl);
 
         return new BaseResponse<>(postConverter.toLikeSvcResponseDto(serviceResDto));
     }

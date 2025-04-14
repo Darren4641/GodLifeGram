@@ -26,7 +26,7 @@ public interface PostService {
 
     Page<ViewCommentResponseDto> getComments(ViewCommentRequestDto viewCommentRequestDto);
 
-    LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto);
+    LikeResponseSvcDto likeOrCancel(LikeRequestSvcDto likeRequestSvcDto, String serverBaseUrl);
 
     WriteCommentResponseSvcDto saveComment(WriteCommentRequestSvcDto writeCommentRequestSvcDto);
 

@@ -17,6 +17,7 @@
     <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
     <link rel="stylesheet" href="/css/common.css?v=1" th:href="@{/css/common.css}">
+    <script th:src="@{/js/pwa-banner.js}" defer></script>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +25,7 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" th:href="@{/manifest.json}">
     <title>#갓생그램</title>
     <style>
     </style>
@@ -330,6 +332,24 @@
 ">
     링크가 복사되었습니다!
 </div>
+<div class="pwa-overlay hidden">
+    <div class="pwa-banner">
+        <div class="modal--default mt-5">
+            <button class="close-button" id="close-banner" aria-label="닫기">&times;</button>
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <img style="width: 15%" src="/icon/icon.png" alt="서비스 로고" class="splash-logo">
+                <h3>갓생하루 설치하기</h3>
+            </div>
+            <p>앱을 설치하시면 푸시알림을 받아보실 수 있습니다!</p>
+            <div class="modal--default--link mt-10" id="install-container">
+                <button type="button" id="install-button" class="install-button">
+                    <p>앱 설치하기</p>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="fragments/footer :: footer"></div>
 </body>
 <script type="text/javascript" th:inline="javascript">
@@ -344,6 +364,7 @@
     var sortDirection = "DESC";
     let currentImageIndex = 0;
     let currentImages = [];
+
 
 
     function checkLoginBeforeUpload() {
@@ -1170,6 +1191,72 @@
         });
     })();
 
+    function isPWA() {
+        return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    async function sendSubscriptionAfterLogin() {
+        console.log("sendSubscriptionAfterLogin called");
+
+        if (!('serviceWorker' in navigator)) {
+            console.warn("Service Worker not supported");
+            return;
+        }
+        if (!('PushManager' in window)) {
+            console.warn("PushManager not supported");
+            return;
+        }
+
+        if (Notification.permission !== 'granted') {
+            console.log("알림 권한 요청 시작");
+            const permission = await Notification.requestPermission();
+            console.log("알림 권한 요청 결과:", permission);
+            if (permission !== 'granted') {
+                console.error("알림 권한이 거부되었습니다.");
+                return;
+            }
+        }
+
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/js/service-worker.js")
+                .then((registration) => {
+                    console.log("Service Worker 등록 성공")
+
+                    return registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array("BBB3jYsJJCutMZ6kT7g0YP1H03zXzu_0VxGGXB1g0HvfvEH2HOCbMy8NF2FgHaM4a2pj-4fRvmP6lTyjhzfKQPI")
+                    });
+                })
+                .then((subscription) => {
+                    return fetch("/auth/subscribe", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            endpoint: subscription.endpoint,
+                            keys: {
+                                p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')))),
+                                auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')))),
+                            },
+                        }),
+                    });
+                })
+                .catch((error) => console.error("Service Worker 등록 실패:", error));
+        }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
         const nav = document.querySelector(".nav");
         const navWrapper = document.querySelector(".nav-wrapper");
@@ -1210,6 +1297,16 @@
                 openCommentModal(commentPostId);
             }, 300);
         }
+
+        if(!isPWA()) {
+            initPwaBanner(false)
+        }
+
+        if(isPWA() && user !== null) {
+            sendSubscriptionAfterLogin();
+        }
+
+
     });
 </script>
 </html>
