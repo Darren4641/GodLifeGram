@@ -64,7 +64,7 @@ self.addEventListener('fetch', (event) => {
 
 // 푸시 이벤트 처리
 self.addEventListener('push', (event) => {
-    let data = { title: '새로운 알림', body: '알림 내용입니다.', icon: '/icon.png' };
+    let data = { title: '새로운 알림', body: '알림 내용입니다.', icon: '/icon/icon.png' };
 
     if (event.data) {
         data = event.data.json();
