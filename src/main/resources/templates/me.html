@@ -85,6 +85,7 @@
 </body>
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
+    var isPushEnabled = /*[[ ${user.isPushEnabled} ]]*/;
 
     function goMyPage() {
         location.href = '/me';
@@ -163,14 +164,104 @@
         } else if (tabName === "settings") {
             // ⚙️ 설정 정보 출력 (더미 데이터)
             contentEl.innerHTML = `
-                <div class="setting-item"><strong>이메일:</strong> darren@example.com</div>
+                <div class="setting-item">
+                    <strong>푸시 알림</strong>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pwaToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <!--<div class="setting-item"><strong>이메일:</strong> darren@example.com</div>
                 <div class="setting-item"><strong>닉네임:</strong> Darren</div>
                 <div class="setting-item"><strong>가입일:</strong> 2024-12-21</div>
                 <div class="setting-item"><strong>계정 상태:</strong> 활성</div>
                 <div class="setting-item"><strong>비밀번호 변경</strong></div>
-                <div class="setting-item"><strong>탈퇴하기</strong></div>
+                <div class="setting-item"><strong>탈퇴하기</strong></div>-->
             `;
+
+            const toggle = document.getElementById("pwaToggle");
+            toggle.checked = isPushEnabled;
+
+            document.getElementById("pwaToggle").addEventListener("change", async function () {
+                if (this.checked) {
+                    const granted = await requestPushPermission();
+                    if (!granted) {
+                        this.checked = false;
+                    }
+
+                    navigator.serviceWorker.register("/js/service-worker.js")
+                        .then((registration) => {
+                            console.log("서비스 워커 등록 성공:", registration);
+                            // 기존 구독 확인
+                            return registration.pushManager.getSubscription()
+                                .then((existingSubscription) => {
+                                    if (existingSubscription) {
+                                        // 기존 구독 취소
+                                        console.log("기존 푸시 구독 삭제 중...");
+                                        return existingSubscription.unsubscribe().then(() => {
+                                            console.log("기존 푸시 구독 삭제 완료");
+                                        });
+                                    }
+                                })
+                                .then(() => registration); // 기존 구독 삭제 후 새 등록을 위해 반환
+                        })
+                        .then((registration) => {
+                            // 새 구독 생성
+                            console.log("새 푸시 구독 생성 중...");
+                            return registration.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: urlBase64ToUint8Array("BBB3jYsJJCutMZ6kT7g0YP1H03zXzu_0VxGGXB1g0HvfvEH2HOCbMy8NF2FgHaM4a2pj-4fRvmP6lTyjhzfKQPI"),
+                            });
+                        })
+                        .then((subscription) => {
+                            console.log("새 푸시 구독 성공:", subscription);
+                            return fetch("/auth/subscribe", {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    endpoint: subscription.endpoint,
+                                    keys: {
+                                        p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')))),
+                                        auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')))),
+                                    },
+                                }),
+                            });
+                        });
+                }
+                await fetch("/auth/subscribe", {
+                    method: "PATCH",
+                    credentials: "include"
+                });
+            });
         }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    async function requestPushPermission() {
+        if (!("Notification" in window)) {
+            alert("이 브라우저는 알림을 지원하지 않습니다.");
+            return false;
+        }
+
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+            alert("알림 권한이 거부되었습니다.");
+            return false;
+        }
+
+        return true;
     }
 
     // 페이지 진입 시 기본 탭 실행

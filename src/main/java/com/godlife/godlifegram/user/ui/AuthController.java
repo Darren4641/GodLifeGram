@@ -58,5 +58,11 @@ public class AuthController {
         return new BaseResponse<>("OK");
     }
 
+    @PatchMapping("/subscribe")
+    public BaseResponse<?> subscribe(@SessionAttribute("user") SigninResponseSvcDto user) {
+        authService.updateSubscribe(user.getId());
+        return new BaseResponse<>("OK");
+    }
+
 
 }

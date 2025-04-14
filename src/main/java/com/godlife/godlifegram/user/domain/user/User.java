@@ -54,8 +54,8 @@ public class User extends BaseEntity {
         this.isPushEnabled = true;
     }
 
-    public void switchPushEnable(Boolean isPushEnabled) {
-        this.isPushEnabled = isPushEnabled;
+    public void switchPushEnable() {
+        this.isPushEnabled = !isPushEnabled;
     }
 
 }

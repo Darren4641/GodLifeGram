@@ -11,4 +11,5 @@ public class SigninResponseSvcDto {
     private Long id;
     private String email;
     private String nickname;
+    private Boolean isPushEnabled;
 }

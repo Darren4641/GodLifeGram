@@ -66,4 +66,13 @@ public class AuthServiceImpl implements AuthService {
         user.subscribe(notificationDto);
         userRepository.save(user);
     }
+
+    @Override
+    public void updateSubscribe(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
+
+        user.switchPushEnable();
+        userRepository.save(user);
+    }
 }

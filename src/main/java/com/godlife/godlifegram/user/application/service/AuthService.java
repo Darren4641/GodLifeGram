@@ -15,4 +15,6 @@ public interface AuthService {
     ProfileResponseDto getUserProfile(Long id);
 
     void subscribe(NotificationDto notificationDto);
+
+    void updateSubscribe(Long id);
 }
