@@ -36,8 +36,8 @@ public class User extends BaseEntity {
     @Column(name = "auth", columnDefinition = "text")
     private String auth;
 
-    @Column(name = "is_push_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private Boolean isPushEnabled;
+    @Column(name = "is_push_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isPushEnabled = false;
 
     public static User signup(String email, String nickname, String password) {
         User user = new User();

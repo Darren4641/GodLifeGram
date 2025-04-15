@@ -57,6 +57,7 @@ public class PostRepositoryDsl {
                         postLike.id.countDistinct(),
                         postComment.id.countDistinct(),
                         user.nickname,
+                        user.id,
                         imageUrls,
                         isLiked,
                         post.createdDate
@@ -94,6 +95,7 @@ public class PostRepositoryDsl {
                     it.get(postLike.id.countDistinct()),
                     it.get(post.likeGoal),
                     it.get(user.nickname),
+                    it.get(user.id),
                     images,
                     it.get(isLiked) != null && it.get(isLiked) == 1,
                     it.get(post.createdDate)
@@ -125,6 +127,7 @@ public class PostRepositoryDsl {
                                 postLike.id.countDistinct(),
                                 post.likeGoal,
                                 user.nickname,
+                                user.id,
                                 imageUrls,
                                 isLiked,
                                 post.createdDate
@@ -223,8 +226,8 @@ public class PostRepositoryDsl {
                         )
                 )
                 .from(post)
-                .join(postImage).on(postImage.post.id.eq(post.id))
-                .join(postLike).on(postLike.post.id.eq(post.id))
+                .leftJoin(postImage).on(postImage.post.id.eq(post.id))
+                .leftJoin(postLike).on(postLike.post.id.eq(post.id))
                 .where(post.user.id.eq(id))
                 .groupBy(post.id)
                 .fetch();

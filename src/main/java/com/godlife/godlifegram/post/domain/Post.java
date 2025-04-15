@@ -34,4 +34,10 @@ public class Post extends BaseEntity {
         return post;
     }
 
+    public void reUpload(String content, Long likeGoal, User user) {
+        this.content = content;
+        this.likeGoal = likeGoal;
+        this.user = user;
+    }
+
 }

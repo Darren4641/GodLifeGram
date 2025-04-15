@@ -20,6 +20,7 @@ public class ViewResponseDto {
     private Long likeCount;
     private Long likeGoal;
     private String nickname;
+    private Long userId;
     private List<String> images;
     private Boolean isLiked;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -36,6 +37,7 @@ public class ViewResponseDto {
         private Long likeCount;
         private Long likeGoal;
         private String nickname;
+        private Long userId;
         private String images;
         private Boolean isLiked;
         private LocalDateTime createdDate;
@@ -55,6 +57,7 @@ public class ViewResponseDto {
                     likeCount,
                     likeGoal,
                     nickname,
+                    userId,
                     images,
                     isLiked,
                     createdDate

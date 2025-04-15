@@ -12,6 +12,7 @@ import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
 import com.godlife.godlifegram.post.ui.dto.response.MyPostResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
+import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -19,6 +20,10 @@ import java.util.List;
 public interface PostService {
 
     UploadResponseSvcDto upload(UploadRequestSvcDto uploadRequestSvcDto);
+
+    UploadResponseSvcDto reUpload(UploadRequestSvcDto uploadRequestSvcDto);
+
+    void delete(Long id, SigninResponseSvcDto user);
 
     Page<ViewResponseDto> getPosts(ViewPostRequestDto viewPostRequestDto);
 

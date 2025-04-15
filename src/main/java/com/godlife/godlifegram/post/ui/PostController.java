@@ -67,6 +67,33 @@ public class PostController {
         return new BaseResponse<>(postService.getPost(id, uuidRequestDto.getUuid()));
     }
 
+    @PutMapping("/{id}")
+    public BaseResponse<UploadResponseDto> editPost(
+            @PathVariable("id") Long id,
+            @RequestParam("content") String content,
+            @RequestParam("likeGoal") Long likeGoal,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @SessionAttribute("user") SigninResponseSvcDto user) {
+
+        if(images.size() > 5) {
+            throw new ApiErrorException(ResultCode.FILE_SIZE_OVER_FIVE);
+        }
+
+        UploadRequestSvcDto serviceReqDto = new UploadRequestSvcDto(content, likeGoal, images, user);
+        serviceReqDto.setPostId(id);
+
+        UploadResponseSvcDto serviceResDto = postService.reUpload(serviceReqDto);
+
+        return new BaseResponse<>(postConverter.toUploadResponseDto(serviceResDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public BaseResponse<String> deletePost(@PathVariable("id") Long id, @SessionAttribute("user") SigninResponseSvcDto user) {
+        postService.delete(id, user);
+
+        return new BaseResponse<>("OK");
+    }
+
     @PostMapping("/like")
     public BaseResponse<LikePostResponseDto> toggleLike(@RequestBody LikePostRequestDto likePostRequestDto) {
         if(likePostRequestDto.getUuid() == null || likePostRequestDto.getUuid().isEmpty()) {
@@ -115,6 +142,9 @@ public class PostController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, imageDto.getContent())
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400") // 1일 캐시
+                .header(HttpHeaders.PRAGMA, "")
+                .header(HttpHeaders.EXPIRES, String.valueOf(System.currentTimeMillis() + 86400_000L)) // 1일 후
                 .body(imageDto.getImage());
     }
 }

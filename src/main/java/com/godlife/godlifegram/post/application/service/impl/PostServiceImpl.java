@@ -19,6 +19,7 @@ import com.godlife.godlifegram.post.ui.dto.request.ViewPostRequestDto;
 import com.godlife.godlifegram.post.ui.dto.response.MyPostResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewCommentResponseDto;
 import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
+import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import com.godlife.godlifegram.user.domain.user.User;
 import com.godlife.godlifegram.user.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,51 @@ public class PostServiceImpl implements PostService {
         });
 
         return postConverter.toUploadSvcResponseDto(newPost);
+    }
+
+    @Override
+    @Transactional
+    public UploadResponseSvcDto reUpload(UploadRequestSvcDto uploadRequestSvcDto) {
+        User user = userRepository.findByEmail(uploadRequestSvcDto.getUser().getEmail())
+                .orElseThrow(() -> new ApiErrorException(ResultCode.USER_NOT_FOUND));
+
+        Post post = postRepository.findById(uploadRequestSvcDto.getId())
+                .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        List<PostImage> postImages = postImageRepository.findByPostId(post.getId());
+        postImages.forEach(image -> {
+            String s3Key = image.getImageUrl().replaceFirst("^/post/image/", "");
+            s3Service.deleteFile(s3Key);
+            postImageRepository.delete(image);
+        });
+
+        post.reUpload(uploadRequestSvcDto.getContent(), uploadRequestSvcDto.getLikeGoal(), user);
+
+        uploadRequestSvcDto.getImages().forEach(image -> {
+            UploadedFileInfoDto uploaded = s3Service.upload(image, post.getId());
+            PostImage postImage = PostImage.upload(post, uploaded.getUrl(), uploaded.getSize());
+            postImageRepository.save(postImage);
+        });
+
+        return postConverter.toUploadSvcResponseDto(post);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id, SigninResponseSvcDto user) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ApiErrorException(ResultCode.NOT_FOUND));
+
+        List<PostImage> postImages = postImageRepository.findByPostId(id);
+        postImages.forEach(image -> {
+            String s3Key = image.getImageUrl().replaceFirst("^/post/image/", "");
+            s3Service.deleteFile(s3Key);
+            postImageRepository.delete(image);
+        });
+
+        postCommentRepository.deleteByPost(post);
+        postLikeRepository.deleteByPost(post);
+        postRepository.delete(post);
     }
 
     @Override

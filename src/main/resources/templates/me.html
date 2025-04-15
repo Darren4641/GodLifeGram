@@ -17,6 +17,8 @@
     <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
     <link rel="stylesheet" href="/css/common.css?v=1" th:href="@{/css/common.css}">
+    <meta property="og:url" content="/image/banner.png">
+    <script th:src="@{/js/pwa-banner.js}" defer></script>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,6 +82,27 @@
         </div>
     </div>
 
+</div>
+<div class="pwa-overlay hidden">
+    <div class="pwa-banner">
+        <div class="modal--default mt-5">
+            <button class="close-button" id="close-banner" aria-label="닫기">&times;</button>
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <img style="width: 15%" src="/icon/icon.png" alt="서비스 로고" class="splash-logo">
+                <h3>갓생하루 설치하기</h3>
+            </div>
+            <p style="text-align: center;">앱을 설치하시면 푸시알림을 받아보실 수 있습니다!</p>
+            <div style="text-align: center; margin-bottom: 10px;">
+                <img src="/image/alarm.png">
+            </div>
+
+            <div class="modal--default--link mt-10" id="install-container">
+                <button type="button" id="install-button" class="install-button">
+                    <p>앱 설치하기</p>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 <div th:replace="fragments/footer :: footer"></div>
 </body>
@@ -171,8 +194,10 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <!--<div class="setting-item"><strong>이메일:</strong> darren@example.com</div>
-                <div class="setting-item"><strong>닉네임:</strong> Darren</div>
+                <div class="setting-item" onclick="initPwaBanner(true);">
+                    <strong>앱 설치</strong>
+                </div>
+                <!--<div class="setting-item"><strong>닉네임:</strong> Darren</div>
                 <div class="setting-item"><strong>가입일:</strong> 2024-12-21</div>
                 <div class="setting-item"><strong>계정 상태:</strong> 활성</div>
                 <div class="setting-item"><strong>비밀번호 변경</strong></div>
@@ -263,6 +288,8 @@
 
         return true;
     }
+
+
 
     // 페이지 진입 시 기본 탭 실행
     window.addEventListener("DOMContentLoaded", () => {

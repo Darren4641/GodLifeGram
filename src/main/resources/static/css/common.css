@@ -827,6 +827,7 @@ body {
     box-sizing: border-box;
     transition: transform 0.3s ease;
     transform: translateY(100%);
+    padding-bottom: 20px;
 }
 .comment-form input {
     flex: 1;
@@ -1161,8 +1162,8 @@ body {
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 26px;
+    width: 30px;
+    height: 15px;
 }
 
 .toggle-switch input {
@@ -1183,10 +1184,10 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
+    height: 15px;
+    width: 15px;
+    left: 0px;
+    bottom: 0px;
     background-color: white;
     transition: 0.4s;
     border-radius: 50%;
@@ -1197,5 +1198,36 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(24px);
+    transform: translateX(15px);
+}
+
+.post-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+    margin: 10px 10px 10px 0;
+}
+
+.post-action-buttons button {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.post-action-buttons .edit-btn:hover {
+    background-color: #e0f7fa;
+    border-color: #00acc1;
+    color: #006064;
+}
+
+.post-action-buttons .delete-btn:hover {
+    background-color: #ffebee;
+    border-color: #e53935;
+    color: #b71c1c;
 }

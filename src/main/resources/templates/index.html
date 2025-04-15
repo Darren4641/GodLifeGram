@@ -17,6 +17,7 @@
     <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
     <link rel="stylesheet" href="/css/common.css?v=1" th:href="@{/css/common.css}">
+    <meta property="og:url" content="/image/banner.png">
     <script th:src="@{/js/pwa-banner.js}" defer></script>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -161,69 +162,71 @@
     </div>
 </div>
 <!-- 갓생 업로드 모달 -->
-<div id="uploadModal" class="upload-modal hidden">
-    <div class="upload-handle"></div>
-    <div class="upload-header">
-        <span>갓생 등록</span>
-        <button class="close-btn" onclick="closeUploadModal()">✕</button>
+<div th:fragment="uploadModal">
+    <div id="uploadModal" class="upload-modal hidden">
+        <div class="upload-handle"></div>
+        <div class="upload-header">
+            <span>갓생 등록</span>
+            <button class="close-btn" onclick="closeUploadModal()">✕</button>
+        </div>
+
+        <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
+            <textarea placeholder="오늘의 갓생을 인증해보세요!" rows="4"></textarea>
+
+            <div class="upload-images">
+                <label class="image-box">
+                    <input type="file" multiple onchange="handleImageUpload(event)">
+                    <span>＋</span>
+                </label>
+
+                <div id="imagePreviewContainer">
+                </div>
+            </div>
+
+            <span>목표 좋아요 수</span>
+            <!-- 목표 좋아요 수 입력 -->
+            <div class="like-goal-wrapper" style="display: flex; align-items: center; justify-content: left; margin: 1rem 0;">
+                <img src="/icon/heart.png" alt="하트" style="width: 22px; height: 22px; margin-right: 0.5rem;">
+
+                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                    <button type="button" onclick="changeLikeGoal(-1)" style="
+                width: 30px;
+                height: 30px;
+                border: none;
+                border-radius: 50%;
+                background-color: #f0f0f0;
+                font-size: 18px;
+                cursor: pointer;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            ">−</button>
+
+                    <input type="number" id="likeGoalInput" min="3" value="3" style="
+                width: 60px;
+                padding: 6px 10px;
+                text-align: center;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: 500;
+                box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            ">
+
+                    <button type="button" onclick="changeLikeGoal(1)" style="
+                width: 30px;
+                height: 30px;
+                border: none;
+                border-radius: 50%;
+                background-color: #f0f0f0;
+                font-size: 18px;
+                cursor: pointer;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            ">＋</button>
+                </div>
+            </div>
+
+            <button type="submit" class="upload-submit">업로드</button>
+        </form>
     </div>
-
-    <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
-        <textarea placeholder="오늘의 갓생을 인증해보세요!" rows="4"></textarea>
-
-        <div class="upload-images">
-            <label class="image-box">
-                <input type="file" multiple onchange="handleImageUpload(event)">
-                <span>＋</span>
-            </label>
-
-            <div id="imagePreviewContainer">
-            </div>
-        </div>
-
-        <span>목표 좋아요 수</span>
-        <!-- 목표 좋아요 수 입력 -->
-        <div class="like-goal-wrapper" style="display: flex; align-items: center; justify-content: left; margin: 1rem 0;">
-            <img src="/icon/heart.png" alt="하트" style="width: 22px; height: 22px; margin-right: 0.5rem;">
-
-            <div style="display: flex; align-items: center; gap: 0.3rem;">
-                <button type="button" onclick="changeLikeGoal(-1)" style="
-            width: 30px;
-            height: 30px;
-            border: none;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            font-size: 18px;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        ">−</button>
-
-                <input type="number" id="likeGoalInput" min="3" value="3" style="
-            width: 60px;
-            padding: 6px 10px;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-        ">
-
-                <button type="button" onclick="changeLikeGoal(1)" style="
-            width: 30px;
-            height: 30px;
-            border: none;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            font-size: 18px;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        ">＋</button>
-            </div>
-        </div>
-
-        <button type="submit" class="upload-submit">업로드</button>
-    </form>
 </div>
 <!-- ✅ 댓글 모달 -->
 <div th:fragment="commentModal">
@@ -431,7 +434,7 @@
     }
 
     function logout() {
-        fetch("/auth/logout", { method: "POST" })
+        fetch("/auth/logout", { method: "POST", credentials: "include" })
             .then(() => {
                 sessionStorage.removeItem('loggedIn');
                 alert("로그아웃 되었습니다.");
@@ -469,6 +472,7 @@
 
         fetch("/auth/signup", {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 email: email,
@@ -522,6 +526,7 @@
 
         fetch("/post/like", {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 postId: postId,
@@ -613,6 +618,22 @@
             return;
         }
 
+        if (!imageList || imageList.length === 0) {
+            alert("이미지를 1개 이상 업로드해주세요.");
+            return;
+        }
+
+        const invalidFile = imageList.find(file => !file.type.startsWith("image/"));
+        if (invalidFile) {
+            alert("이미지 파일만 업로드할 수 있습니다.");
+            return;
+        }
+
+        if (isNaN(goal) || goal < 3) {
+            alert("목표 좋아요는 3개 이상으로 해주세요.");
+            return;
+        }
+
         // 로딩창 표시
         let loading = document.getElementById("loadingOverlay");
         loading.innerHTML = `<div class="loader"></div>`;
@@ -635,6 +656,7 @@
 
         fetch("/post", {
             method: "POST",
+            credentials: "include",
             body: formData
         })
             .then(async res => {
@@ -724,7 +746,7 @@
 
                     card.innerHTML += `
                         <div style="display: flex; align-items: center; justify-content: space-between">
-                            <div class="post-caption-nickname">@${post.nickname}</div>
+                            <div class="post-caption-nickname" onclick="location.href='/profile?id=${post.userId}'">@${post.nickname}</div>
                             <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
                                 <img
                                     src="/icon/share.png"
@@ -1007,6 +1029,7 @@
 
         fetch(`/post/comment`, {
             method: "POST",
+            credentials: "include",
             body: formData
         })
             .then(res => {
@@ -1247,6 +1270,7 @@
                 .then((subscription) => {
                     return fetch("/auth/subscribe", {
                         method: 'POST',
+                        credentials: "include",
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             endpoint: subscription.endpoint,

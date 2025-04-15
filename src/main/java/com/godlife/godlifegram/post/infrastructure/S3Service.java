@@ -1,7 +1,6 @@
 package com.godlife.godlifegram.post.infrastructure;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
@@ -12,8 +11,6 @@ import com.godlife.godlifegram.post.infrastructure.dto.ImageDto;
 import com.godlife.godlifegram.post.infrastructure.dto.UploadedFileInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -83,6 +80,19 @@ public class S3Service {
             throw new ApiErrorException(ResultCode.ERROR);
         }
     }
+
+    public void deleteFile(String s3Key) {
+        try {
+            if (amazonS3.doesObjectExist(bucket, s3Key)) {
+                amazonS3.deleteObject(bucket, s3Key);
+            } else {
+                throw new ApiErrorException(ResultCode.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("S3 파일 삭제 실패: " + s3Key, e);
+        }
+    }
+
 
     private BufferedImage resizeIfNeeded(BufferedImage original, int maxWidth) {
         if (original.getWidth() <= maxWidth) return original;

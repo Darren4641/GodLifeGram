@@ -56,6 +56,7 @@
     <div th:replace="index :: heartEffec"></div>
     <div th:replace="index :: commentModal"></div>
     <div th:replace="index :: imageViewModal"></div>
+    <div th:replace="index :: uploadModal"></div>
     <!-- 공유 완료 모달 -->
     <div id="shareToast" style="
     position: fixed;
@@ -81,6 +82,11 @@
 <script type="text/javascript" th:inline="javascript">
     var user = /*[[ ${user} ]]*/;
     var pendingCommentPostId = null;
+    var representativeFile = null;
+    let imageList = [];
+    let originalServerImages = [];
+    let editMode = false;
+    let editingPostId = null;
     function registerUUID() {
         if (!localStorage.getItem('godlife_uuid')) {
             localStorage.setItem('godlife_uuid', 'uuid_' + generateUUID());
@@ -279,7 +285,7 @@
 
                 card.innerHTML += `
                         <div style="display: flex; align-items: center; justify-content: space-between">
-                            <div class="post-caption-nickname">@${post.nickname}</div>
+                            <div class="post-caption-nickname" onclick="location.href='/profile?id=${post.userId}'">@${post.nickname}</div>
                             <div class="post-meta like-progress ${isCompleted ? 'completed' : ''}">
                                 <img
                                     src="/icon/share.png"
@@ -291,7 +297,7 @@
                                     class="icon"
                                     onclick="openCommentModal(${post.id})"
                                 >
-                                <span class="comment_count">${post.commentCount}</span>
+                                <span class="comment_count" style="color: black !important;">${post.commentCount}</span>
                                 <img
                                     src="${post.isLiked ? '/icon/heart.png' : '/icon/empty_heart.png'}"
                                     class="icon"
@@ -309,9 +315,183 @@
                         </div>
                     `;
 
+                if (user && user.id === post.userId) {
+                    const actionButtons = document.createElement("div");
+                    actionButtons.className = "post-action-buttons";
+
+                    const postJsonString = JSON.stringify(post);
+                    const encoded = encodeURIComponent(postJsonString);
+
+                    actionButtons.innerHTML = `
+                                                    <button class="edit-btn" onclick="openEditModal(decodeURIComponent('${encoded}'))">수정</button>
+                                                    <button class="delete-btn" onclick="deletePost(${post.id})">삭제</button>
+                                                `;
+
+                    card.appendChild(actionButtons);
+                }
+
                 listEl.appendChild(card);
 
             })
+    }
+
+
+    function openEditModal(jsonStringOrObject) {
+        const post = typeof jsonStringOrObject === 'string' ? JSON.parse(jsonStringOrObject) : jsonStringOrObject;
+        // 모달 열기
+        document.getElementById("uploadModal").classList.remove("hidden");
+        document.getElementById("uploadModal").classList.add("show");
+
+        // 수정모드 true
+        editMode = true;
+        editingPostId = post.id;
+
+        // 기존 내용 세팅
+        document.querySelector("#uploadForm textarea").value = post.content;
+        document.getElementById("likeGoalInput").value = post.likeGoal;
+
+        // 이미지 리스트 초기화
+        imageList = [];
+        representativeFile = null;
+        originalServerImages = [];
+
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        previewContainer.innerHTML = "";
+
+        // 기존 이미지 썸네일로 표시
+        post.images.forEach((url, index) => {
+            const img = document.createElement("img");
+            img.src = url;
+            img.className = "preview-image";
+            previewContainer.appendChild(img);
+
+            // 서버 이미지도 수정 요청에 포함되도록 리스트로 추가
+            const fakeFile = new File([], url); // 서버 이미지 placeholder
+            fakeFile.isServer = true;
+            fakeFile.url = url;
+            imageList.push(fakeFile);
+            originalServerImages.push(fakeFile);
+        });
+
+        representativeFile = imageList[0] || null;
+
+        renderImagePreviews();
+
+        // 버튼 텍스트 변경
+        const submitBtn = document.querySelector("#uploadForm button[type='submit']");
+        submitBtn.textContent = "수정 완료";
+    }
+
+    function handleImageUpload(event) {
+        const files = event.target.files;
+
+        if (imageList.length + files.length > 5) {
+            alert("이미지는 최대 5개까지 업로드 가능합니다.");
+            return;
+        }
+
+        Array.from(files).forEach((file, index) => {
+            let extension = 'jpg';
+            if (file.name && file.name.lastIndexOf('.') !== -1) {
+                extension = file.name.substring(file.name.lastIndexOf('.') + 1);
+            }
+            const newFileName = `upload_${Date.now()}_${index}.${extension}`;
+            const newFile = new File([file], newFileName, { type: file.type });
+
+            imageList.push(newFile);
+            if (!representativeFile) {
+                representativeFile = newFile;
+            }
+        });
+
+        renderImagePreviews();
+        event.target.value = "";
+    }
+
+    function changeLikeGoal(delta) {
+        const input = document.getElementById("likeGoalInput");
+        let current = parseInt(input.value) || 1;
+        current += delta;
+        if (current < 1) current = 1;
+        input.value = current;
+    }
+
+    function deletePost(postId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        fetch(`/post/${postId}`, {
+            method: "DELETE"
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("삭제 실패");
+                return res.json();
+            })
+            .then(() => {
+                alert("삭제 완료!");
+                location.href = "/me"; // 메인으로 이동
+            })
+            .catch(err => alert("오류: " + err.message));
+    }
+
+    async function urlToFile(url, fileName, mimeType = "image/jpeg") {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new File([blob], fileName, { type: mimeType });
+    }
+
+    async function renderImagePreviews() {
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        previewContainer.innerHTML = "";
+
+        for (const file of imageList) {
+            const imgURL = file.isServer ? file.url : await readFileAsDataURL(file);
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "preview-image-wrapper";
+
+            const img = document.createElement("img");
+            img.src = imgURL;
+            img.title = "클릭 시 대표 이미지로 설정";
+            img.onclick = () => setRepresentativeImage(file);
+
+            const btn = document.createElement("button");
+            btn.className = "remove-image";
+            btn.innerText = "×";
+            btn.onclick = (ev) => {
+                ev.stopPropagation();
+                imageList = imageList.filter(i => i !== file);
+                if (representativeFile === file) {
+                    representativeFile = imageList[0] || null;
+                }
+                renderImagePreviews();
+            };
+
+            if (file === representativeFile) {
+                const badge = document.createElement("div");
+                badge.className = "represent-label";
+                badge.innerText = "대표";
+                wrapper.appendChild(badge);
+            }
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(btn);
+            previewContainer.appendChild(wrapper);
+        }
+    }
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function setRepresentativeImage(file) {
+        imageList.forEach(f => f.isRepresentative = false); // 기존 것들 해제
+        file.isRepresentative = true;
+        representativeFile = file;
+        renderImagePreviews();
     }
 
     function openCommentModal(postId) {
@@ -403,6 +583,108 @@
             .catch(err => {
                 alert("댓글 불러오기 실패: " + err.message);
             });
+    }
+
+    document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const content = document.querySelector("#uploadForm textarea").value.trim();
+        const goal = document.getElementById("likeGoalInput").value;
+
+        if (!content) {
+            alert("내용을 입력해주세요.");
+            return;
+        }
+
+        if (!imageList || imageList.length === 0) {
+            alert("이미지를 1개 이상 업로드해주세요.");
+            return;
+        }
+
+        const invalidFile = imageList.find(file => !file.type?.startsWith("image/") && !file.isServer);
+        if (invalidFile) {
+            alert("이미지 파일만 업로드할 수 있습니다.");
+            return;
+        }
+
+        if (isNaN(goal) || goal < 3) {
+            alert("목표 좋아요는 3개 이상으로 해주세요.");
+            return;
+        }
+
+        const loading = document.getElementById("loadingOverlay");
+        loading.innerHTML = `<div class="loader"></div>`;
+        loading.style.display = "flex";
+
+        const submitBtn = document.querySelector("#uploadForm button[type='submit']");
+        submitBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("content", content);
+        formData.append("likeGoal", goal);
+
+        // ✅ 삭제할 기존 이미지들 추출
+        const originalServerUrls = originalServerImages.map(f => f.url); // 처음 불러온 모든 서버 이미지
+        const currentServerUrls = imageList.filter(f => f.isServer).map(f => f.url);
+        const deleteUrls = originalServerUrls.filter(url => !currentServerUrls.includes(url));
+
+        /*deleteUrls.forEach(url => {
+            const key = extractS3KeyFromUrl(url);
+            if (key) formData.append("deleteKeys", key);
+        });*/
+
+        // ✅ 모든 이미지들을 실제 File 객체로 변환해서 formData에 담기
+        const orderedList = [...imageList].sort((a, b) => {
+            if (a.isRepresentative) return -1;
+            if (b.isRepresentative) return 1;
+            return 0;
+        });
+
+        const convertedFiles = await Promise.all(orderedList.map(async (file, index) => {
+            if (file.isServer) {
+                const response = await fetch(file.url);
+                const blob = await response.blob();
+                const extension = file.url.split('.').pop().split('?')[0];
+                const filename = `reupload_${Date.now()}_${index}.${extension}`;
+                return new File([blob], filename, { type: blob.type });
+            }
+            return file;
+        }));
+
+        for (const file of convertedFiles) {
+            formData.append("images", file);
+        }
+
+
+        fetch(`/post/${editingPostId}`, {
+            method: "PUT",
+            body: formData
+        })
+            .then(async res => {
+                if (!res.ok) {
+                    const body = await res.json();
+                    throw new Error(body.message || "요청 실패");
+                }
+                return res.json();
+            })
+            .then(() => {
+                closeUploadModal();
+                location.reload();
+            })
+            .catch(err => {
+                alert(err.message || "오류 발생");
+            })
+            .finally(() => {
+                loading.style.display = "none";
+                submitBtn.disabled = false;
+                representativeFile = null;
+            });
+    });
+
+    function openUploadModal() {
+        const modal = document.getElementById("uploadModal");
+        modal.classList.add("show");
+        modal.classList.remove("hidden");
     }
 
     function submitComment(event) {
@@ -580,6 +862,12 @@
 
     function closeImageViewModal() {
         document.getElementById('imageViewModal').classList.add('hidden');
+    }
+
+    function closeUploadModal() {
+        const modal = document.getElementById("uploadModal");
+        modal.classList.remove("show");
+        setTimeout(() => modal.classList.add("hidden"), 300);
     }
 
     function updateImageView() {
