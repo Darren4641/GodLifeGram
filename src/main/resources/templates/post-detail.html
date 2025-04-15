@@ -17,7 +17,7 @@
     <link rel="icon" type="image/png" sizes="96x96" th:href="@{/favicon/favicon-96x96.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/favicon/favicon-16x16.png}">
     <link rel="stylesheet" href="/css/common.css?v=1" th:href="@{/css/common.css}">
-    <meta property="og:title" th:content="'@' + ${user?.nickname} + '님의 갓생 인증'" />
+    <meta property="og:title" th:content="'@' + ${post?.nickname} + '님의 갓생 인증'" />
     <meta property="og:description" th:content="${#strings.abbreviate(post?.content, 80)}" />
     <meta property="og:image" th:content="@{${post?.images[0]}}" />
     <link rel="manifest" href="/manifest.json">
