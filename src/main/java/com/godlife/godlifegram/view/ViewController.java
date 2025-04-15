@@ -29,7 +29,7 @@ public class ViewController {
 
     @GetMapping("/post-detail")
     public String detail(@RequestParam("id") Long id, HttpSession session, Model model) {
-        Object user = session.getAttribute("user");
+        SigninResponseSvcDto user = (SigninResponseSvcDto) session.getAttribute("user");
         ViewResponseDto post = null;
         try {
             post = postService.getPost(id, "og");
