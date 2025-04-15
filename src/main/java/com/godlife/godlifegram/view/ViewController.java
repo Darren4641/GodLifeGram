@@ -2,6 +2,8 @@ package com.godlife.godlifegram.view;
 
 import com.godlife.godlifegram.post.application.dto.response.MyPostCountResponseSvcDto;
 import com.godlife.godlifegram.post.application.service.PostService;
+import com.godlife.godlifegram.post.domain.Post;
+import com.godlife.godlifegram.post.ui.dto.response.ViewResponseDto;
 import com.godlife.godlifegram.user.application.dto.response.SigninResponseSvcDto;
 import com.godlife.godlifegram.user.application.service.AuthService;
 import com.godlife.godlifegram.user.ui.dto.response.ProfileResponseDto;
@@ -26,9 +28,18 @@ public class ViewController {
     }
 
     @GetMapping("/post-detail")
-    public String detail(HttpSession session, Model model) {
+    public String detail(@RequestParam("id") Long id, HttpSession session, Model model) {
         Object user = session.getAttribute("user");
+        ViewResponseDto post = null;
+        try {
+            post = postService.getPost(id, "og");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         model.addAttribute("user", user);
+        if(post != null)    model.addAttribute("post", post);
+
         return "post-detail";
     }
 
