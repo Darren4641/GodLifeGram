@@ -881,8 +881,10 @@
     }
 
     function copyPostLink(postId) {
-        const url = `${location.origin}/post-detail?id=${postId}`;
-        navigator.clipboard.writeText(url).then(() => {
+        const rawUrl = `${location.origin}/post-detail?id=${postId}`;
+        const encodedUrl = encodeURI(rawUrl); // 전체 URL 인코딩
+
+        navigator.clipboard.writeText(encodedUrl).then(() => {
             const toast = document.getElementById("shareToast");
             toast.style.display = "block";
             toast.style.opacity = "1";
