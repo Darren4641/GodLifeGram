@@ -39,7 +39,9 @@ html, body {
     textarea {
         background: white !important;
     }
-
+    .comment_count {
+        color: white !important;
+    }
     .profile-tab .tab-btn.active {
         color: #ffffff !important;
         border-bottom: 2px solid white !important;;
