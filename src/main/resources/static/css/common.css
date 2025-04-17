@@ -3,6 +3,13 @@
     box-sizing: border-box;
 }
 
+
+a:link,
+a:visited {
+    color: inherit; /* 또는 원하는 색상 예: #000 */
+}
+
+
 html, body {
     height: 100%;
     margin: 0;
@@ -31,6 +38,11 @@ html, body {
 
     textarea {
         background: white !important;
+    }
+
+    .profile-tab .tab-btn.active {
+        color: #ffffff !important;
+        border-bottom: 2px solid white !important;;
     }
 
     .wrapper::before {
@@ -500,6 +512,9 @@ body {
 .footer {
     border-top: 1px solid #eee;
     background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .footer a:hover {
     text-decoration: underline;

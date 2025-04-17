@@ -28,7 +28,7 @@ public class UserConverter {
     }
 
     public SigninResponseSvcDto toSigninResponseSvcDto(User user) {
-        return new SigninResponseSvcDto(user.getId(), user.getEmail(), user.getNickname(), user.getIsPushEnabled());
+        return new SigninResponseSvcDto(user.getId(), user.getEmail(), user.getNickname(), user.getIsPushEnabled(), false);
     }
 
     public ProfileResponseDto toProfileResponseDto(User user) {

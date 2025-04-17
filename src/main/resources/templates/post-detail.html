@@ -313,7 +313,7 @@
                         </div>
                     `;
 
-                if (user && user.id === post.userId) {
+                if ((user && user.id === post.userId) || (user && user.isAdmin)) {
                     const actionButtons = document.createElement("div");
                     actionButtons.className = "post-action-buttons";
 

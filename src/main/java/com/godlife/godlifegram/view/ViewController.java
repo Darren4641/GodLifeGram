@@ -30,6 +30,9 @@ public class ViewController {
     @GetMapping("/post-detail")
     public String detail(@RequestParam("id") Long id, HttpSession session, Model model) {
         SigninResponseSvcDto user = (SigninResponseSvcDto) session.getAttribute("user");
+        if(user != null && "zxz4641@gmail.com".equals(user.getEmail())) {
+            user.isAdmin();
+        }
         ViewResponseDto post = null;
         try {
             post = postService.getPost(id, "og");

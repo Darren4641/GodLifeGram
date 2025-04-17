@@ -12,4 +12,9 @@ public class SigninResponseSvcDto {
     private String email;
     private String nickname;
     private Boolean isPushEnabled;
+    private Boolean isAdmin = false;
+
+    public void isAdmin() {
+        this.isAdmin = true;
+    }
 }
