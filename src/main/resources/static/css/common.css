@@ -357,6 +357,10 @@ body {
     font-size: 0.8rem;
 }
 
+.comment_count {
+    color: black;
+}
+
 .like-progress {
     display: flex;
     align-items: center;
